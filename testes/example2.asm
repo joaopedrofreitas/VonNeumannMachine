@@ -35,4 +35,8 @@ comparacao:
 	#beq $t6 $t6 igual
 	#bne $t6 $t7 diferente
 	#bgt $t6 $t7 maior
+<<<<<<< HEAD
 	#blt $t7 $t6 menor
+=======
+	#blt $t7 $t6 menor
+>>>>>>> refs/remotes/origin/master
