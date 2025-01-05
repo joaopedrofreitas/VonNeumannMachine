@@ -96,7 +96,7 @@ PCB loadProgram(const std::string& inputFile, MainMemory & ram, int id) {
     }
 
     // Substitute addresses in instructions
-    int memAddress = (LAST_ADDRESS + 1);
+    int memAddress,InitialAdress = (LAST_ADDRESS + 1);
     for (auto instruction : instructions) {
         for (const auto& [label, addr] : labelAddresses) {
             size_t pos = instruction.find(label);
@@ -127,9 +127,13 @@ PCB loadProgram(const std::string& inputFile, MainMemory & ram, int id) {
         memAddress++;
     }
 
+    LAST_ADDRESS = memAddress;
     QUANTUM = (instructions.size()) / 5;        // A Cada 5 instruções => +1 QUANTUM 
     int STATE = 0;
 
-    PCB processo = PCB(id,QUANTUM,memAddress);
+    PCB processo = PCB(id,QUANTUM,InitialAdress);
+    cout<< "ENDEREÇO DE MEMÓRIA: "<<InitialAdress<<endl;
+    cout<< "FINAL DE MEMÓRIA: "<<memAddress<<endl;
+    cout<<"VARIAVEL GLOBAL: "<<LAST_ADDRESS<<endl;
     return processo;
 }

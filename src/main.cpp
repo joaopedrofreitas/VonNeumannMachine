@@ -5,30 +5,29 @@
 #include <cstdint>
 #include <queue>
 
-#define N_PROCESS 1
+#define N_PROCESS 2
 using namespace std;
 
 struct ThreadArgs {
     int core_id;
-    Control_Unit* UC;
-    REGISTER_BANK* registers;
     MainMemory* ram;
     Instruction_Data* data;
     bool* endProgram;
-    std::queue<PCB>* Fila_Prontos;
+    PCB* Processo;
 };
 
 
-void* CoreFunction(void* args){
+void* CoreFunction(void* args){ // PEGAR O PCB
     ThreadArgs* coreArgs = (ThreadArgs*)args;
 
     int core_id = coreArgs->core_id;
-    Control_Unit& UC = *(coreArgs->UC);
-    REGISTER_BANK& registers = *(coreArgs->registers);
     MainMemory& ram = *(coreArgs->ram);
     Instruction_Data& data = *(coreArgs->data);
     bool& endProgram = *(coreArgs->endProgram);
-    std::queue<PCB>& Fila_Prontos = *(coreArgs->Fila_Prontos);
+    PCB& Processo = *(coreArgs->Processo);
+    
+    Control_Unit UC;
+    REGISTER_BANK registers;
 
     int counterForEnd = 5;
     int counter = 0;
@@ -55,7 +54,7 @@ void* CoreFunction(void* args){
             if(counter >= 0 && counterForEnd == 5){
                 //chamar a instrução de fetch da unidade de controle
                 UC.data.push_back(data) ;
-                UC.Fetch(registers, endProgram,ram);
+                UC.Fetch(registers, endProgram,ram,Processo);
             }
             
             counter += 1;
@@ -65,7 +64,6 @@ void* CoreFunction(void* args){
             if(endProgram == true){
                 counterForEnd =- 1;
             }
-            //pcb.QUANTUM-timestamp >=0
         }
 
     std::cout << "Core " << core_id << " finalizado.\n";
@@ -77,51 +75,39 @@ void* CoreFunction(void* args){
 
 int main(int argc, char* argv[]){
 
-    if (argc != 2) {
+    if (argc < 2) {
       std::cerr << "Usage: " << argv[0] << " <input_file>" << std::endl;
       return 1;
     }
 
     MainMemory ram = MainMemory(2048,2048);				  
-    REGISTER_BANK registers;
-    Control_Unit UC;
     queue<PCB> Fila_Prontos;
-
-    bool endProgram = false;
     Instruction_Data data;
 
+    bool endProgram = false;
 
     for(int i=0; i < N_PROCESS; i++){
         PCB processo = loadProgram(argv[i+1],ram,i);
         Fila_Prontos.push(processo);
     }
     
-    pthread_t  threads[N_PROCESS];
-    ThreadArgs threadArgs[N_PROCESS];
+    //cout<<"TAMANHO FILA PRONTO: "<<Fila_Prontos.size()<<endl;
+
+    pthread_t     threads[N_PROCESS];
+    ThreadArgs    threadArgs[N_PROCESS];
 
     for (int i = 0; i < N_PROCESS; i++) {
-        threadArgs[i] = {i, &UC, &registers, &ram, &data, &endProgram, &Fila_Prontos};
+        threadArgs[i] = {i, &ram, &data, &endProgram, &Fila_Prontos.front()};
         if (pthread_create(&threads[i], nullptr, CoreFunction, (void*)&threadArgs[i]) != 0) {
             std::cerr << "Erro ao criar a thread " << i << std::endl;
             return 1;
         }
+        Fila_Prontos.pop();
     }
 
     for (int i = 0; i < N_PROCESS; i++) {
         pthread_join(threads[i], nullptr);
     }
 
-    std::cout << "Simulação multicore finalizada.\n";
-
     return 0;
 }
-
-
-
- /*numcores=2;
-    pthread thread;
-    // PIPELINE - CORE 1
-    ThreadsVetor<thread> Vthread;
-    for(int i=0; i<2;i++){
-        Vthread.emplace_back(Pipeline, i, std::ref(UC), num_cores);
-    }*/

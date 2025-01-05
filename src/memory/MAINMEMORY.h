@@ -2,6 +2,7 @@
 #define MAINMEMORY_H
 
 #include "MEMORYCELL.h"
+#include"../memory/PCB.h"
 #include "stdbool.h"
 #include <cstdint>
 

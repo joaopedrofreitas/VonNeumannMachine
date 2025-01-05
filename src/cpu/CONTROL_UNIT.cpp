@@ -18,7 +18,7 @@ uint32_t ConvertToDecimalValue(uint32_t value){
 
 //PIPELINE
 
-void Control_Unit::Fetch(REGISTER_BANK &registers, bool &endProgram, MainMemory &ram){
+void Control_Unit::Fetch(REGISTER_BANK &registers, bool &endProgram, MainMemory &ram, PCB &pcb){
     const uint32_t instruction = registers.ir.read();
     registers.ir.write(ram.ReadMem(registers.mar.read()));
     if(instruction == 0b11111100000000000000000000000000)
@@ -27,13 +27,13 @@ void Control_Unit::Fetch(REGISTER_BANK &registers, bool &endProgram, MainMemory 
         endProgram = true;
         return;
     }
-    registers.mar.write(registers.pc.value);
+    registers.mar.write(pcb.program_counter);
     //chamar a memória com a posição do pc e inserir em um registrador
     //registers.ir.write(aqui tem de ser passado a instrução que estiver na RAM);
 
-    registers.ir.write(ram.ReadMem(registers.mar.read()));
+    registers.ir.write(ram.ReadMem(registers.pc.value));
     //cout << "IR: " << bitset<32>(registers.ir.read()) << endl;
-    registers.pc.write(registers.pc.value += 1);//incrementando o pc 
+    registers.pc.write(registers.pc.value += 1);    //incrementando o pc 
 }
 
 void Control_Unit::Decode(REGISTER_BANK &registers, Instruction_Data &data){
@@ -69,7 +69,7 @@ void Control_Unit::Decode(REGISTER_BANK &registers, Instruction_Data &data){
         string instrucao = to_string(instruction);
         if(Get_immediate(instruction) == "0000000000000000"){  //se for zero, então é um registrador
             data.target_register = Get_target_Register(instruction);
-        }else{  //se não for zero, então é um valor imediato
+        }else{                                                  //se não for zero, então é um valor imediato
             data.addressRAMResult = Get_immediate(instruction); 
         }
     }
@@ -131,6 +131,9 @@ void Control_Unit::Write_Back(Instruction_Data &data, MainMemory &memory,REGISTE
     return;
 
 }
+
+//VERIFICA SE TEM ALGO, CASO TENHA => PCB.STATE = WAIT => ESPERA LIBERAR O RECURSO => RETORNA PRA LISTA DE PRONTOS
+
 
 string Control_Unit::Identificacao_instrucao(uint32_t instruction, REGISTER_BANK &registers){
 

@@ -1,39 +1,38 @@
 .data
 
-value:	 5
+value:	 10
 Z:	 0
 vetor: 0,1,2,3
 
 .text 		
 
 main:
-	li $t0, 100		# Load immediate value (25) 
-	li $t5, 50		# Load immediate value (25) 
-	print $t0
-	lw $t1, value		# Load the word stored in value (see bottom)
-	print $t1
-	add $t3, $t1, $t0	# Add
-	print $t3
-	sub $t4, $t0, $t1	# Subtract
-	print $t4
-	sw $t4, Z		# Store the answer in Z (declared at the bottom)  
+	li $t5, 25		# Load immediate value (25) 
+	print $t5
+	lw $t6, value		# Load the word stored in value (see bottom)
+	print $t6
+	add $t8, $t6, $t5	# Add
+	print $t8
+	sub $t9, $t5, $t6	# Subtract
+	print $t9
+	sw $t9, Z		# Store the answer in Z (declared at the bottom)  
 	print Z
 
-	la $t0, vetor
-	li $t2, 0 # Contador
-	li $t3, 3 # Tamanho do vetor
+	la $t5, vetor
+	li $t7, 0 # Contador
+	li $t8, 3 # Tamanho do vetor
 	j print_vec
 print_vec:
-	print $t0
-	li $t1, 1
-	add $t0, $t1, $t0 # Aumenta o ponteiro do vetor
-	add $t2, $t1 $t2 # Aumenta contador
-	blti $t2 $t3 print_vec
+	print $t5
+	li $t6, 1
+	add $t5, $t6, $t5 # Aumenta o ponteiro do vetor
+	add $t7, $t6 $t7 # Aumenta contador
+	blti $t7 $t8 print_vec
 
 comparacao:
-	li $t1 10
-	li $t2 5
-	#beq $t1 $t1 igual
-	#bne $t1 $t2 diferente
-	#bgt $t1 $t2 maior
-	#blt $t2 $t1 menor
+	li $t6 10
+	li $t7 5
+	#beq $t6 $t6 igual
+	#bne $t6 $t7 diferente
+	#bgt $t6 $t7 maior
+	#blt $t7 $t6 menor

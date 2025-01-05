@@ -28,6 +28,6 @@ public:
     int QUANTUM;                                     // Tempo necessário para completar o processo
     
     PCB(int id, int exec_time, int base_address)
-        : process_id(id), state(READY), program_counter(0), QUANTUM(exec_time), base_address(base_address) {                 
+        : process_id(id), state(READY), program_counter(base_address), QUANTUM(exec_time), base_address(base_address) {                 
     }
 };
