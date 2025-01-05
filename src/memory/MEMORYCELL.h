@@ -1,6 +1,7 @@
 #ifndef MEMORYCELL_HPP
 #define MEMORYCELL_HPP
 
+#include <cstdint>
 #include <iostream>
 #include <string>
 #include "../cpu/REGISTER.h"

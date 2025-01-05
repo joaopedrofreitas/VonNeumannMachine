@@ -3,6 +3,7 @@
 
 #include "MEMORYCELL.h"
 #include "stdbool.h"
+#include <cstdint>
 
 using namespace std;
 
@@ -19,24 +20,24 @@ struct MainMemory{
 		this->NumOfj = NumOfj;
 		words =  (MemoryCell**)malloc( sizeof(MemoryCell*) * this->NumOfi);
 
-		for(uint32_t k = 0; k<NumOfi ; k++)
+		for(uint32_t k = 0; k<static_cast<uint32_t>(NumOfi) ; k++)
 		{
 			words[k] = (MemoryCell*)malloc(sizeof(MemoryCell) * this->NumOfj);
 		
 			
 		}
 
-		for(uint32_t i = 0 ; i < NumOfi ; i++ )
-			for(uint32_t j = 0 ; j< NumOfj ; j++)
+		for(uint32_t i = 0 ; i < static_cast<uint32_t>(NumOfi) ; i++ )
+			for(uint32_t j = 0 ; j< static_cast<uint32_t>(NumOfj) ; j++)
 				words[i][j].write(0);
 		
 	}
 
-        void InsertData(const uint32_t data, int iTarget, int jTarget);
+    void InsertData(const uint32_t data, int iTarget, int jTarget);
 	void EraseData(int iTarget, int jTarget);
 	bool EmptyLine(int i) const;
 	void WriteMem(const uint32_t address, const uint32_t data);
-	const uint32_t ReadMem(const uint32_t address);
+	uint32_t ReadMem(const uint32_t address);
 
 //	void ShowBit(int NumOfj, int NumOfi);
 //	void WriteBit(REGISTER value, int iTarget, int jTarget);

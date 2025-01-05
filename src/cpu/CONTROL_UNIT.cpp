@@ -89,10 +89,6 @@ void Control_Unit::Execute(REGISTER_BANK &registers,Instruction_Data &data, int 
         Execute_Operation(registers,data);
     }
 
-    //cout<<"entrou"<<endl;
-    //cout << counter << endl;
-
-    // demais operações realizadas no memory acess
 }
 
 void Control_Unit::Memory_Acess(REGISTER_BANK &registers,Instruction_Data &data, MainMemory &memory){
@@ -394,5 +390,3 @@ string Control_Unit::Pick_Code_Register_Load(const uint32_t instruction){
 
     return code;
 }
-
-

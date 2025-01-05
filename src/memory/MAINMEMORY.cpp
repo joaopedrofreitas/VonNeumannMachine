@@ -47,7 +47,7 @@ void MainMemory::WriteMem(const uint32_t address, const uint32_t data) {
     words[iTarget][jTarget].write(data);
 }
 
-const uint32_t MainMemory::ReadMem(const uint32_t address) {
+uint32_t MainMemory::ReadMem(const uint32_t address) {
     if (address >= NumOfi * NumOfj) {
         printf("Endereço inválido!\n");
         return -1; 

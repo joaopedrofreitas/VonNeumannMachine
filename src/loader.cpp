@@ -5,8 +5,11 @@
 #include <unordered_map>
 #include <vector>
 #include <bitset>
-
 #include"./memory/MAINMEMORY.h"
+#include"loader.h"
+
+//extern int USABLE_ADDRESS;
+int LAST_ADDRESS = -1; 
 
 const int MEMORY_SIZE = 2048*2048; // 32-bit address space
 
@@ -14,18 +17,20 @@ std::string padName(const std::string& name) {
     return name + std::string(16 - name.length(), '#');
 }
 
-void loadProgram(const std::string& inputFile, MainMemory & ram) {
+PCB loadProgram(const std::string& inputFile, MainMemory & ram, int id) {
     std::ifstream file(inputFile);
     if (!file.is_open()) {
         std::cerr << "Error opening file!" << std::endl;
-        return;
+        exit(1);
     }
 
     std::unordered_map<std::string, int> labelAddresses;
     std::unordered_map<std::string, int> variableAddresses;
     std::vector<std::string> instructions;
     int address = 0;
-
+    
+    int QUANTUM = 0;
+    
     std::string line;
 
     // Read instructions and data
@@ -54,15 +59,15 @@ void loadProgram(const std::string& inputFile, MainMemory & ram) {
                 while (std::getline(valueStream, value, ',')) {
                     if (address >= MEMORY_SIZE) {
                         std::cerr << "Memory overflow while allocating vector data." << std::endl;
-                        return;
+                        exit(1);
                     }
                     // Convert the value to int and store it in memory
                     int intValue = std::stoi(value);
                     ram.WriteMem(address,intValue);
 
-                    //std::cout << "Variable: " << padName(variableName) 
-                    //          << " Address: " << address 
-                    //          << " Value: " << intValue << std::endl;
+                    /*std::cout << "Variable: " << padName(variableName) 
+                              << " Address: " << address 
+                              << " Value: " << intValue << std::endl;*/
                     address += 1; 
                 }
             }
@@ -91,7 +96,7 @@ void loadProgram(const std::string& inputFile, MainMemory & ram) {
     }
 
     // Substitute addresses in instructions
-    int memAddress = 0;
+    int memAddress = (LAST_ADDRESS + 1);
     for (auto instruction : instructions) {
         for (const auto& [label, addr] : labelAddresses) {
             size_t pos = instruction.find(label);
@@ -122,8 +127,9 @@ void loadProgram(const std::string& inputFile, MainMemory & ram) {
         memAddress++;
     }
 
-    // Output the loaded memory for verification
-    //for (size_t i = 0; i < address; ++i) {
-    //    std::cout << "Address " << (i) << ": " << std::bitset<32>(ram.ReadMem(i)) << std::endl;
-    //}
+    QUANTUM = (instructions.size()) / 5;        // A Cada 5 instruções => +1 QUANTUM 
+    int STATE = 0;
+
+    PCB processo = PCB(id,QUANTUM,memAddress);
+    return processo;
 }

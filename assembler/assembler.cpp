@@ -333,7 +333,7 @@ void processAssemblyFile(const string &filename, string &output) {
 
 
 void writeOutputFile(const string &output, const unordered_map<string, vector<int>> &dataMap) {
-    ofstream outFile("output.bin");
+    ofstream outFile(output);
    
     for (char bit : output) {
         outFile << bit;
@@ -364,9 +364,11 @@ int main(int argc, char *argv[]) {
     }
 
     string output;
-    processAssemblyFile(argv[1], output);
-    writeOutputFile(output, dataMap);
-
+    for(int i=1;i < argc; i++){
+        processAssemblyFile(argv[i], (output+=to_string(i)));
+        writeOutputFile((output+=to_string(i)), dataMap);
+        dataMap.clear();
+    }
     cout << "Assembly completed. Output written to output.bin" << endl;
     return 0;
 }

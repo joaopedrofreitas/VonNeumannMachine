@@ -8,6 +8,7 @@ vetor: 0,1,2,3
 
 main:
 	li $t0, 25		# Load immediate value (25) 
+	li $t5, 30		# Load immediate value (25) 
 	print $t0
 	lw $t1, value		# Load the word stored in value (see bottom)
 	print $t1

@@ -19,8 +19,6 @@ add_executable(CustomVonNeumannMachine
         src/memory/MEMORYCELL.h
         src/memory/MAINMEMORY.h
         src/memory/MAINMEMORY.cpp
-        src/memory/SECONDARY_MEMORY.cpp
-        src/memory/SECONDARY_MEMORY.h
 )
 add_executable(Assembler
         assembler/assembler.cpp
