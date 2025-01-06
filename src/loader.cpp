@@ -8,16 +8,13 @@
 #include"./memory/MAINMEMORY.h"
 #include"loader.h"
 
-//extern int USABLE_ADDRESS;
-int LAST_ADDRESS = -1; 
-
 const int MEMORY_SIZE = 2048*2048; // 32-bit address space
 
 std::string padName(const std::string& name) {
     return name + std::string(16 - name.length(), '#');
 }
 
-PCB loadProgram(const std::string& inputFile, MainMemory & ram, int id) {
+PCB loadProgram(const std::string& inputFile, MainMemory & ram, int id, int &LAST_ADDRESS) {
     std::ifstream file(inputFile);
     if (!file.is_open()) {
         std::cerr << "Error opening file!" << std::endl;
@@ -96,7 +93,9 @@ PCB loadProgram(const std::string& inputFile, MainMemory & ram, int id) {
     }
 
     // Substitute addresses in instructions
-    int memAddress,InitialAdress = (LAST_ADDRESS + 1);
+    int memAddress = LAST_ADDRESS + 1;
+    int InitialAdress = LAST_ADDRESS + 1;
+    //cout<<"MEMORY ADDRESS1: "<<memAddress<<endl;
     for (auto instruction : instructions) {
         for (const auto& [label, addr] : labelAddresses) {
             size_t pos = instruction.find(label);
@@ -124,16 +123,17 @@ PCB loadProgram(const std::string& inputFile, MainMemory & ram, int id) {
         } catch (const std::exception& e) {
             std::cerr << "Conversion error at: " << instruction << std::endl;
         }
+        //cout<<"MEMORY ADDRESS: "<<memAddress<<endl;
         memAddress++;
     }
 
     LAST_ADDRESS = memAddress;
     QUANTUM = (instructions.size()) / 5;        // A Cada 5 instruções => +1 QUANTUM 
     int STATE = 0;
-
+    
     PCB processo = PCB(id,QUANTUM,InitialAdress);
-    cout<< "ENDEREÇO DE MEMÓRIA: "<<InitialAdress<<endl;
+    /*cout<< "ENDEREÇO DE MEMÓRIA: "<<InitialAdress<<endl;
     cout<< "FINAL DE MEMÓRIA: "<<memAddress<<endl;
-    cout<<"VARIAVEL GLOBAL: "<<LAST_ADDRESS<<endl;
+    cout<< "VARIAVEL GLOBAL: "<<LAST_ADDRESS<<endl;*/
     return processo;
 }

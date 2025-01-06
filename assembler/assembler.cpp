@@ -363,13 +363,14 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    string output;
     for(int i=1;i < argc; i++){
+        string output;
         string fileName = "output" + to_string(i) + ".bin";
         processAssemblyFile(argv[i], output);
         writeOutputFile(output, dataMap, fileName);
         dataMap.clear();
     }
+    
     cout << "Assembly completed. Output written to output.bin" << endl;
     return 0;
 }

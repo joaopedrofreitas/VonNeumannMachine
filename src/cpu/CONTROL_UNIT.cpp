@@ -4,6 +4,7 @@
 // TODO
 // - Implement print, li, la, lw, sw, j
 
+
 uint32_t ConvertToDecimalValue(uint32_t value){
     string bin_str = to_string(value);
         uint32_t decimal_value = 0;       
@@ -27,13 +28,14 @@ void Control_Unit::Fetch(REGISTER_BANK &registers, bool &endProgram, MainMemory 
         endProgram = true;
         return;
     }
-    registers.mar.write(pcb.program_counter);
+    registers.pc.write(pcb.program_counter);
+    registers.mar.write(registers.pc.value);
     //chamar a memória com a posição do pc e inserir em um registrador
     //registers.ir.write(aqui tem de ser passado a instrução que estiver na RAM);
-
-    registers.ir.write(ram.ReadMem(registers.pc.value));
+    registers.ir.write(ram.ReadMem(registers.mar.read()));
     //cout << "IR: " << bitset<32>(registers.ir.read()) << endl;
-    registers.pc.write(registers.pc.value += 1);    //incrementando o pc 
+    registers.pc.write(registers.pc.value += 1);//incrementando o pc
+    pcb.program_counter += 1; 
 }
 
 void Control_Unit::Decode(REGISTER_BANK &registers, Instruction_Data &data){
@@ -91,7 +93,7 @@ void Control_Unit::Execute(REGISTER_BANK &registers,Instruction_Data &data, int 
 
 }
 
-void Control_Unit::Memory_Acess(REGISTER_BANK &registers,Instruction_Data &data, MainMemory &memory){
+void Control_Unit::Memory_Acess(REGISTER_BANK &registers,Instruction_Data &data, MainMemory &memory){ //PRINT E LOAD
 
     
     string nameregister = this->map.mp[data.target_register];
@@ -108,8 +110,9 @@ void Control_Unit::Memory_Acess(REGISTER_BANK &registers,Instruction_Data &data,
     }
     else if(data.op == "PRINT" && data.target_register == ""){
         int decimal_addr = ConvertToDecimalValue(stoul(data.addressRAMResult));
-        int value = memory.ReadMem(decimal_addr);
-        cout << "PROGRAM PRINT: " << value << endl;
+        uint32_t value = memory.ReadMem(decimal_addr);
+        //cout<< "ENDEREÇO: " << decimal_addr << endl;
+        cout << "PROGRAM PRINT: " << value << endl; //ENDEREÇO DE MEMORIA
     }
 
     return;
@@ -118,7 +121,7 @@ void Control_Unit::Memory_Acess(REGISTER_BANK &registers,Instruction_Data &data,
 void Control_Unit::Write_Back(Instruction_Data &data, MainMemory &memory,REGISTER_BANK &registers){
 
     string nameregister = this->map.mp[data.target_register];
-
+    
     //aqui devem ocorrer qualquer uma das intruções de escrita na RAM
     if(data.op == "SW"){
         //aqui tem de ser feito a escrita na RAM
@@ -379,7 +382,8 @@ void Control_Unit::Execute_Operation(REGISTER_BANK &registers,Instruction_Data &
     string nameregister = this->map.mp[data.target_register];
 
     if(data.op == "PRINT" && data.target_register != ""){
-        cout << "PROGRAM PRINT: " << registers.acessoLeituraRegistradores[nameregister]() << endl;
+        //cout<< "REGISTRADOR: "<< nameregister<<endl;
+        cout << "PROGRAM PRINT: " << registers.acessoLeituraRegistradores[nameregister]() << endl; //VALORES 
     }
 }
 
@@ -393,3 +397,10 @@ string Control_Unit::Pick_Code_Register_Load(const uint32_t instruction){
 
     return code;
 }
+
+
+// if(PRINT==1){
+//     WAITING
+//     while(PRINT==1){}
+//     PRINT=1;
+// }
