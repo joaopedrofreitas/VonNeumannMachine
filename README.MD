@@ -278,7 +278,7 @@ blt $t0 $t3 loop
       <tr><td><u>./Assembler testes/example.asm testes/example2.asm</td> <td>Gerar o Binario dos programas Assembly</td></tr>
       <tr><td><u>./CustomVonNeumannMachine testes/output1.bin testes/output2.bin</td>  <td> Executar o programa com 2 processos</td></tr>
     </table>
-    <i>Caso deseje executar com mais processos, basta acresecentar o nome do arquivos junto aos executaveis das 2 ultimas instruçõe. Veja abaixo um exemplo para 3 processos<i>
+    <i>Caso deseje executar com mais processos, basta acresecentar o nome do arquivos junto aos executaveis das 2 ultimas instruçõe. Veja abaixo um exemplo para 3 processos:<i>
     <table border="1">
       <tr><td><u>./Assembler testes/example.asm testes/example2.asm testes/example3.asm</td> <td>Gerar o Binario dos programas Assembly</td></tr>
       <tr><td><u>./CustomVonNeumannMachine testes/output1.bin testes/output2.bin testes/output3.bin</td>  <td> Executar o programa com 2 processos</td></tr>
