@@ -149,24 +149,6 @@ citadas no ciclo da CPU são realizadas aqui, definidas em que ordem vão ser ex
 - `data`: Vetor de Instruções
 - `InstructionMap`: Map de operação e seu opcode
 
-#### Funções 
-
-- `Get_immediate`: 
-- `Pick_Code_Register_Load`: 
-- `Get_destination_Register`:
-- `Get_target_Register`:
-- `Get_source_Register`:
-- `Identificacao_instrucao`:
-- `Fetch`:
-- `Decode`:
-- `Execute_Aritmetic_Operation`:
-- `Execute_Operation`:
-- `Execute_Loop_Operation`:
-- `Execute`:
-- `Memory_Acess`:
-- `Write_Back`: 
-
-
 ## REGISTER
 Unidade individual de armazenamento, usado para armazenar dados temporários, 
 endereços de memória ou informações de controle.
@@ -291,19 +273,13 @@ blt $t0 $t3 loop
 <p>
     <i>Este código possui um arquivo CmakeLists.txt</br>As diretrizes de execução deste Cmake são:<i>
     <table border="1">
-      <tr><td><u>cmake CMakeLists.txt</u></td> <td>Apaga a última compilação realizada contida na pasta build</td></tr>
-      <tr><td><u>make</u></td> <td>Executa a compilação do programa utilizando o gcc, e o resultado vai para a pasta build.</td></tr>
-      <tr><td><u>./Assembler testes/example.asm</td></tr>
-      <tr><td><u>mv output.bin testes</td></tr>
-      <tr><td><u>./CustomVonNeumannMachine testes/output.bin </u></td> <td>Executa com programa da pasta teste </td></tr>
+      <tr><td><u>cmake CMakeLists.txt</u></td> <td>define as instruções e regras para compilar e construir o projeto</td></tr>
+      <tr><td><u>make</u></td> <td>Executa a compilação do programa</td></tr>
+      <tr><td><u>./Assembler testes/example.asm testes/example2.asm</td> <td>Gerar o Binario dos programas Assembly</td></tr>
+      <tr><td><u>./CustomVonNeumannMachine testes/output1.bin testes/output2.bin</td>  <td> Executar o programa com 2 processos</td></tr>
     </table>
 </p>
 
 # Autores
-
-Frank Leite Lemos <br>
-Getulio Santos Mendes <br>
-Cesar Henrrique Soares <br>
 João Pedro Freitas de Paula Dias <br>
-Joao Gustavo Silva Guimarães <br>
 Leandro Sousa Costa <br>

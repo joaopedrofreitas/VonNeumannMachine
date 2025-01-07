@@ -7,14 +7,15 @@
 #include <atomic>
 #include <pthread.h>
 
-#define N_PROCESS 3
+#define N_PROCESS 2 
 using namespace std;
 
 queue<PCB> READY_QUEUE;
 int CONTADOR_RUNNING = 0;
-queue<PCB> WAITING_QUEUE;
+vector<queue<int>> WAITING_QUEUE(3); //LOAD | PRINT | STORE
+int LAST_ADDRESS = -1;
 
-vector<bool> PERMISSIONS = {0,0,0,0}; //LOAD | PRINT | READ | STORE
+vector<int> PERMISSIONS = {0,0,0}; //LOAD | PRINT | STORE
 
 struct ThreadArgs {
     int core_id;
@@ -39,36 +40,37 @@ void* CoreFunction(void* args){
     int clock = 0;
     int timestamp = 0;
     
-   if (CONTADOR_RUNNING < 2) {
+   if (CONTADOR_RUNNING < N_PROCESS) {
         Processo.state = RUNNING;
         CONTADOR_RUNNING++;
         if(!READY_QUEUE.empty()){READY_QUEUE.pop();}
     } else {
-        while(CONTADOR_RUNNING >= 2 && READY_QUEUE.front().process_id != Processo.process_id){}
+        while(CONTADOR_RUNNING >= N_PROCESS && READY_QUEUE.front().process_id != Processo.process_id){}
         CONTADOR_RUNNING++;
         if(!READY_QUEUE.empty()){READY_QUEUE.pop();}
     }
 
     while (counterForEnd > 0) {
         if (counter >= 4 && counterForEnd >= 1) {
-            UC.Write_Back(UC.data[counter - 4], ram, registers);
+            UC.Write_Back(UC.data[counter - 4], ram, registers, WAITING_QUEUE[2], PERMISSIONS[2], Processo.process_id, LAST_ADDRESS);
         }
         if (counter >= 3 && counterForEnd >= 2) {
-            UC.Memory_Acess(registers, UC.data[counter - 3], ram);
+            UC.Memory_Acess(registers, UC.data[counter - 3], ram, WAITING_QUEUE[0], PERMISSIONS[0], Processo.process_id);
         }
         if (counter >= 2 && counterForEnd >= 3) {
-            UC.Execute(registers, UC.data[counter - 2], counter, counterForEnd, endProgram, ram);
+            UC.Execute(registers, UC.data[counter - 2], counter, counterForEnd, endProgram, ram, WAITING_QUEUE[1], PERMISSIONS[1], Processo.process_id);
         }
         if (counter >= 1 && counterForEnd >= 4) {
             UC.Decode(registers, UC.data[counter - 1]);
         }
         if (counter >= 0 && counterForEnd == 5) {
             UC.data.push_back(data);
-            UC.Fetch(registers, endProgram, ram, Processo);
+            UC.Fetch(registers, endProgram, ram, Processo, WAITING_QUEUE[1], PERMISSIONS[1], Processo.process_id);
         }
 
         counter += 1;
         clock += 1;
+        timestamp += 1;
 
         if (endProgram == true) {
             counterForEnd = -1;
@@ -77,7 +79,7 @@ void* CoreFunction(void* args){
             if((Processo.QUANTUM - timestamp) == 0) {
                 CONTADOR_RUNNING--;            
                 READY_QUEUE.push(Processo);
-                while(CONTADOR_RUNNING >= 2 && READY_QUEUE.front().process_id != Processo.process_id){}
+                while(CONTADOR_RUNNING >= N_PROCESS && READY_QUEUE.front().process_id != Processo.process_id){}
                 CONTADOR_RUNNING++;
                 if(!READY_QUEUE.empty()){READY_QUEUE.pop();}
             }
@@ -96,20 +98,16 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    int LAST_ADDRESS = -1;
-
     MainMemory ram = MainMemory(2048, 2048);
-    pthread_t threads[N_PROCESS];
-    ThreadArgs threadArgs[N_PROCESS];
+    pthread_t threads[(argc-1)];
+    ThreadArgs threadArgs[(argc-1)];
 
-    // Carrega os processos na READY_QUEUE
-    for (int i = 0; i < N_PROCESS; i++) {
-        PCB processo = loadProgram(argv[i + 1], ram, i, LAST_ADDRESS);
+    for (int i = 0; i < (argc-1); i++) {
+        PCB processo = loadProgram(argv[i + 1], ram, i, LAST_ADDRESS, WAITING_QUEUE[2], PERMISSIONS[2]);
         READY_QUEUE.push(processo);
     }
 
-    // Cria as threads
-    for (int i = 0; i < N_PROCESS; i++) {
+    for (int i = 0; i < (argc-1); i++) {
         threadArgs[i] = {i, &ram, &READY_QUEUE.front()};
 
         if (pthread_create(&threads[i], nullptr, CoreFunction, (void*)&threadArgs[i]) != 0) {
@@ -120,8 +118,7 @@ int main(int argc, char* argv[]) {
         if(!READY_QUEUE.empty()){READY_QUEUE.pop();}
     }
 
-    // Aguarda o término das threads
-    for (int i = 0; i < N_PROCESS; i++) {
+    for (int i = 0; i < (argc-1); i++) {
         pthread_join(threads[i], nullptr);
     }
 

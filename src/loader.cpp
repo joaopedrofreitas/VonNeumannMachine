@@ -14,7 +14,7 @@ std::string padName(const std::string& name) {
     return name + std::string(16 - name.length(), '#');
 }
 
-PCB loadProgram(const std::string& inputFile, MainMemory & ram, int id, int &LAST_ADDRESS) {
+PCB loadProgram(const std::string& inputFile, MainMemory & ram, int id, int &LAST_ADDRESS, queue<int>& WAITING_QUEUE, int& PERMISSIONS) {
     std::ifstream file(inputFile);
     if (!file.is_open()) {
         std::cerr << "Error opening file!" << std::endl;
@@ -24,7 +24,7 @@ PCB loadProgram(const std::string& inputFile, MainMemory & ram, int id, int &LAS
     std::unordered_map<std::string, int> labelAddresses;
     std::unordered_map<std::string, int> variableAddresses;
     std::vector<std::string> instructions;
-    int address = 0;
+    int address = LAST_ADDRESS+1;
     
     int QUANTUM = 0;
     
@@ -60,20 +60,24 @@ PCB loadProgram(const std::string& inputFile, MainMemory & ram, int id, int &LAS
                     }
                     // Convert the value to int and store it in memory
                     int intValue = std::stoi(value);
+                    if(PERMISSIONS == 1)
+                    {
+                        WAITING_QUEUE.push(id);
+                        while(WAITING_QUEUE.front() != id && PERMISSIONS == 1){}
+                        if(!WAITING_QUEUE.empty()){WAITING_QUEUE.pop();}
+                    }
+                    PERMISSIONS = 1;
                     ram.WriteMem(address,intValue);
+                    PERMISSIONS = 0;
 
-                    /*std::cout << "Variable: " << padName(variableName) 
-                              << " Address: " << address 
-                              << " Value: " << intValue << std::endl;*/
                     address += 1; 
                 }
             }
           }    
         }
-      // break if at the end of the data section
       break; 
     }
-    // Check for labels
+    
     else if (trimmedLine.find(":") != std::string::npos) {
         size_t colonPos = trimmedLine.find(":");
         std::string label = trimmedLine.substr(0, colonPos);
@@ -85,29 +89,26 @@ PCB loadProgram(const std::string& inputFile, MainMemory & ram, int id, int &LAS
             address += 1; 
         }
     }
-    // Regular instruction
     else {
         instructions.push_back(trimmedLine);
         address += 1; 
       }
     }
 
-    // Substitute addresses in instructions
+    
     int memAddress = LAST_ADDRESS + 1;
     int InitialAdress = LAST_ADDRESS + 1;
-    //cout<<"MEMORY ADDRESS1: "<<memAddress<<endl;
+    
     for (auto instruction : instructions) {
         for (const auto& [label, addr] : labelAddresses) {
             size_t pos = instruction.find(label);
             if (pos != std::string::npos) {
-                // Substitute label with address
                 instruction.replace(pos, label.length(), std::bitset<16>(addr).to_string());
             }
         }
         for (const auto& [varName, addr] : variableAddresses) {
             size_t pos = instruction.find(varName);
             if (pos != std::string::npos) {
-                // Substitute variable with address
                 instruction.replace(pos, varName.length(), std::bitset<16>(addr).to_string());
             }
         }
@@ -117,23 +118,33 @@ PCB loadProgram(const std::string& inputFile, MainMemory & ram, int id, int &LAS
             std::cerr << "Can't resolve symbol at instruction: " << instruction << std::endl; 
         }
 
-        // Convert instruction string to binary and store in memory
+        
         try {
+            if(PERMISSIONS == 1)
+            {
+                WAITING_QUEUE.push(id);
+                while(WAITING_QUEUE.front() != id && PERMISSIONS == 1){}
+                if(!WAITING_QUEUE.empty()){WAITING_QUEUE.pop();}
+            }
+            PERMISSIONS = 1;
             ram.WriteMem(memAddress, std::stoul(instruction, nullptr, 2));
+            PERMISSIONS = 0;
         } catch (const std::exception& e) {
             std::cerr << "Conversion error at: " << instruction << std::endl;
         }
-        //cout<<"MEMORY ADDRESS: "<<memAddress<<endl;
+        
         memAddress++;
     }
 
-    LAST_ADDRESS = memAddress;
+    LAST_ADDRESS = address + 1;
     QUANTUM = (instructions.size()) / 5;        // A Cada 5 instruções => +1 QUANTUM 
     int STATE = 0;
     
+    //Output the loaded memory for verification
+    // for (size_t i = 0; i < 70; ++i) {
+    //    std::cout << "Address " << (i) << ": " << std::bitset<32>(ram.ReadMem(i)) << std::endl;
+    // }
+
     PCB processo = PCB(id,QUANTUM,InitialAdress);
-    /*cout<< "ENDEREÇO DE MEMÓRIA: "<<InitialAdress<<endl;
-    cout<< "FINAL DE MEMÓRIA: "<<memAddress<<endl;
-    cout<< "VARIAVEL GLOBAL: "<<LAST_ADDRESS<<endl;*/
     return processo;
 }
