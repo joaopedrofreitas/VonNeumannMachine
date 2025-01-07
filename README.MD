@@ -280,6 +280,8 @@ blt $t0 $t3 loop
     </table>
 </p>
 
+<b>Caso deseje executar com mais processos, basta acresecentar o nome do arquivos junto aos executaveis das 2 ultimas instruçõe</b>
+
 # Autores
 João Pedro Freitas de Paula Dias <br>
 Leandro Sousa Costa <br>

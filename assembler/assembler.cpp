@@ -125,7 +125,7 @@ int getRegisterCode(const string &reg) {
     if (registerMap.find(cleanedReg) != registerMap.end()) {
         return registerMap.at(cleanedReg);
     }
-    cerr << "Error: Invalid register \"" << cleanedReg << "\"" << endl;
+    //cerr << "Error: Invalid register \"" << cleanedReg << "\"" << endl;
     return -1; 
 }
 
@@ -193,10 +193,7 @@ void processAssemblyFile(const string &filename, string &output) {
                     output += "\n";               
                 }
                 
-                string labelName = line.substr(0, colonPos);
-                if (labelName.length() > 16) {
-                    cerr << "Error: Label \"" << labelName << "\" exceeds the maximum length of 16 characters." << endl;
-                }                
+                string labelName = line.substr(0, colonPos);               
                 output += labelName + ":\n"; 
                 insideLabel = true;
 
@@ -279,10 +276,7 @@ void processAssemblyFile(const string &filename, string &output) {
                     }
                 }            
             }
-            else{
-              cerr << "Invalid instruction \"" << instruction << "\" at " << lineNum << endl;
-            }
-        }
+          }
         else{
             // Data section
            
@@ -321,9 +315,7 @@ void processAssemblyFile(const string &filename, string &output) {
                     }                      
                 }
             } 
-            else {
-                    cerr << "Error: Invalid variable definition in data section at line " << lineNum << endl;
-                }        
+              
             }
                 
         lineNum++;
