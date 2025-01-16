@@ -24,10 +24,10 @@ public:
     ProcessState state;                              // Estado do processo       -> READY, RUNNING, WAITING, TERMINATED 
     int program_counter;                             // Instrução atual          -> Endereço da instrução 
     vector<pair<REGISTER_BANK, int>> registers;      // Banco de registradores   -> (REGISTRADOR - VALOR)  
-    int base_address;                                // Endereço base            -> Endereço que vai começa 
-    int QUANTUM;                                     // Tempo necessário para completar o processo
+    int base_address;                                // Endereço base            -> Endereço que vai começar 
+    int QUANTUM;                                     // QUANTUM                  -> Tempo necessário para completar o processo
+    vector<int> Tickets;                             // Bilhetes                 -> Para o Lottery Scheduling
     
     PCB(int id, int exec_time, int base_address)
-        : process_id(id), state(READY), program_counter(base_address), QUANTUM(exec_time), base_address(base_address) {                 
-    }
+        : process_id(id), state(READY), program_counter(base_address), QUANTUM(exec_time), base_address(base_address)/*,last_address(last_address)*/{}
 };

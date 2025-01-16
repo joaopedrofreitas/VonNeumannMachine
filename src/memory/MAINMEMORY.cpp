@@ -49,8 +49,8 @@ void MainMemory::WriteMem(const uint32_t address, const uint32_t data) {
 
 uint32_t MainMemory::ReadMem(const uint32_t address) {
     if (address >= NumOfi * NumOfj) {
-        printf("Endereço inválido!\n");
-        return -1; 
+        //printf("Endereço inválido!\n");
+        exit(1); 
     }
     int iTarget = address / NumOfj; 
     int jTarget = address % NumOfj; 

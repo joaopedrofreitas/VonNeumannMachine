@@ -1,10 +1,11 @@
 #include "CONTROL_UNIT.h"
 #include <bitset>
 
-// TODO
+// TODO 
 // - Implement print, li, la, lw, sw, j
 
-
+vector<queue<int>> WAITING_QUEUE2(3); //LOAD | PRINT | STORE
+vector<int> PERMISSIONS2 = {0,0,0}; //LOAD | PRINT | STORE
 
 uint32_t ConvertToDecimalValue(uint32_t value){
     string bin_str = to_string(value);
@@ -20,17 +21,18 @@ uint32_t ConvertToDecimalValue(uint32_t value){
 
 //PIPELINE
 
-void Control_Unit::Fetch(REGISTER_BANK &registers, bool &endProgram, MainMemory &ram, PCB &pcb, queue<int>& WAITING_QUEUE, int& PERMISSIONS, int id){
+void Control_Unit::Fetch(REGISTER_BANK &registers, bool &endProgram, MainMemory &ram, PCB &pcb, int id){
     const uint32_t instruction = registers.ir.read();
-    if(PERMISSIONS == 1)
+    if(PERMISSIONS2[0] == 1)
     {
-        WAITING_QUEUE.push(id);
-        while(WAITING_QUEUE.front() != id && PERMISSIONS == 1){}
-        if(!WAITING_QUEUE.empty()){WAITING_QUEUE.pop();}
+        WAITING_QUEUE2[0].push(id);
+        while(WAITING_QUEUE2[0].front() != id && PERMISSIONS2[0] == 1){}
+        if(!WAITING_QUEUE2[0].empty()){WAITING_QUEUE2[0].pop();}
     }
-    PERMISSIONS = 1;
+    PERMISSIONS2[0] = 1;
+    //cout<<"REGISTER MAR: "<<registers.mar.read()<<endl;
     registers.ir.write(ram.ReadMem(registers.mar.read()));
-    PERMISSIONS = 0;
+    PERMISSIONS2[0] = 0;
     if(instruction == 0b11111100000000000000000000000000)
     {
         endProgram = true;
@@ -38,16 +40,15 @@ void Control_Unit::Fetch(REGISTER_BANK &registers, bool &endProgram, MainMemory 
     }
     registers.pc.write(pcb.program_counter);
     registers.mar.write(registers.pc.value);
-
-    if(PERMISSIONS == 1)
+    if(PERMISSIONS2[0] == 1)
     {
-        WAITING_QUEUE.push(id);
-        while(WAITING_QUEUE.front() != id && PERMISSIONS == 1){}
-        if(!WAITING_QUEUE.empty()){WAITING_QUEUE.pop();}
+        WAITING_QUEUE2[0].push(id);
+        while(WAITING_QUEUE2[0].front() != id && PERMISSIONS2[0] == 1){}
+        if(!WAITING_QUEUE2[0].empty()){WAITING_QUEUE2[0].pop();}
     }
-    PERMISSIONS = 1;
+    PERMISSIONS2[0] = 1;
     registers.ir.write(ram.ReadMem(registers.mar.read()));
-    PERMISSIONS = 0;
+    PERMISSIONS2[0] = 0;
     registers.pc.write(registers.pc.value += 1);//incrementando o pc
     pcb.program_counter += 1; 
 }
@@ -78,7 +79,7 @@ void Control_Unit::Decode(REGISTER_BANK &registers, Instruction_Data &data){
     }
     else if(data.op == "PRINT"){
         string instrucao = to_string(instruction);
-        if(Get_immediate(instruction) == "0000000000000000"){  //se for zero, então é um registrador
+        if(Get_immediate(instruction) == "0000000000000000"){   //se for zero, então é um registrador
             data.target_register = Get_target_Register(instruction);
         }else{                                                  //se não for zero, então é um valor imediato
             data.addressRAMResult = Get_immediate(instruction); 
@@ -88,83 +89,91 @@ void Control_Unit::Decode(REGISTER_BANK &registers, Instruction_Data &data){
     return;
 }
 
-void Control_Unit::Execute(REGISTER_BANK &registers,Instruction_Data &data, int &counter, int& counterForEnd,bool& programEnd, MainMemory& ram, queue<int>& WAITING_QUEUE, int& PERMISSIONS, int id){
+void Control_Unit::Execute(REGISTER_BANK &registers,Instruction_Data &data, int &counter, int& counterForEnd,bool& programEnd, MainMemory& ram,int id){
 
     if(data.op == "ADD" ||  data.op == "SUB" || data.op == "MUL" || data.op == "DIV"){
         Execute_Aritmetic_Operation(registers, data);
     }else if(data.op == "BEQ" || data.op == "J" || data.op == "BNE" || data.op == "BGT" || data.op == "BGTI" || data.op == "BLT" || data.op == "BLTI"){
-        Execute_Loop_Operation(registers, data, counter,counterForEnd,programEnd,ram, WAITING_QUEUE, PERMISSIONS, id);
+        Execute_Loop_Operation(registers, data, counter,counterForEnd,programEnd,ram, id);
     }
     else if( data.op == "PRINT" ){
-        if(PERMISSIONS == 1)
+        if(PERMISSIONS2[1] == 1)
         {
-            WAITING_QUEUE.push(id);
-            while(WAITING_QUEUE.front() != id && PERMISSIONS == 1){}
-            if(!WAITING_QUEUE.empty()){WAITING_QUEUE.pop();}
+            WAITING_QUEUE2[1].push(id);
+            while(WAITING_QUEUE2[1].front() != id && PERMISSIONS2[1] == 1){}
+            if(!WAITING_QUEUE2[1].empty()){WAITING_QUEUE2[1].pop();}
         }
-        PERMISSIONS = 1;
+        PERMISSIONS2[1] = 1;
         Execute_Operation(registers,data);
-        PERMISSIONS = 0;
+        PERMISSIONS2[1] = 0;
     }
 
 }
 
-void Control_Unit::Memory_Acess(REGISTER_BANK &registers,Instruction_Data &data, MainMemory &memory, queue<int>& WAITING_QUEUE, int& PERMISSIONS, int id){
+void Control_Unit::Memory_Acess(REGISTER_BANK &registers,Instruction_Data &data, MainMemory &memory, int id){
     
     string nameregister = this->map.mp[data.target_register];
 
     if(data.op == "LW"){
-        if(PERMISSIONS == 1)
+        if(PERMISSIONS2[0] == 1)
         {
-            WAITING_QUEUE.push(id);
-            while(WAITING_QUEUE.front() != id && PERMISSIONS == 1){}
-            if(!WAITING_QUEUE.empty()){WAITING_QUEUE.pop();}
+            WAITING_QUEUE2[0].push(id);
+            while(WAITING_QUEUE2[0].front() != id && PERMISSIONS2[0] == 1){}
+            if(!WAITING_QUEUE2[0].empty()){WAITING_QUEUE2[0].pop();}
         }
-        PERMISSIONS = 1;
+        PERMISSIONS2[0] = 1;
 
         int decimal_addr = ConvertToDecimalValue(stoul(data.addressRAMResult));
         registers.acessoEscritaRegistradores[nameregister](memory.ReadMem(decimal_addr));
-        PERMISSIONS = 0;
+        PERMISSIONS2[0] = 0;
     }
     if(data.op == "LA" || data.op == "LI"){
         int decimal_value = ConvertToDecimalValue(stoul(data.addressRAMResult));
         registers.acessoEscritaRegistradores[nameregister](decimal_value);
     }
     else if(data.op == "PRINT" && data.target_register == ""){
-        if(PERMISSIONS == 1)
+        if(PERMISSIONS2[0] == 1)
         {
-            WAITING_QUEUE.push(id);
-            while(WAITING_QUEUE.front() != id && PERMISSIONS == 1){}
-            if(!WAITING_QUEUE.empty()){WAITING_QUEUE.pop();}
+            WAITING_QUEUE2[0].push(id);
+            while(WAITING_QUEUE2[0].front() != id && PERMISSIONS2[0] == 1){}
+            if(!WAITING_QUEUE2[0].empty()){WAITING_QUEUE2[0].pop();}
         }
-        PERMISSIONS = 1;
+        PERMISSIONS2[0] = 1;
         int decimal_addr = ConvertToDecimalValue(stoul(data.addressRAMResult));
         uint32_t value = memory.ReadMem(decimal_addr);
+        PERMISSIONS2[0] = 0;
 
-        cout << "\rPROGRAM PRINT: " << value <<"\r"<<endl; //ENDEREÇO DE MEMORIA
-        PERMISSIONS = 0;
+        if(PERMISSIONS2[1] == 1)
+        {
+            WAITING_QUEUE2[1].push(id);
+            while(WAITING_QUEUE2[1].front() != id && PERMISSIONS2[1] == 1){}
+            if(!WAITING_QUEUE2[1].empty()){WAITING_QUEUE2[1].pop();}
+        }
+        PERMISSIONS2[1] = 1;
+        cout << "PROGRAM PRINT: " << value <<endl; //ENDEREÇO DE MEMORIA
+        PERMISSIONS2[1] = 0;
     }
 
     return;
 }
 
-void Control_Unit::Write_Back(Instruction_Data &data, MainMemory &memory,REGISTER_BANK &registers, queue<int>& WAITING_QUEUE, int& PERMISSIONS, int id, int &LAST_ADDRESS){
+void Control_Unit::Write_Back(Instruction_Data &data, MainMemory &memory,REGISTER_BANK &registers, int id, int &LAST_ADDRESS){
 
     string nameregister = this->map.mp[data.target_register];
     
     if(data.op == "SW"){
-        if(PERMISSIONS == 1)
+        if(PERMISSIONS2[2] == 1)
         {
-            WAITING_QUEUE.push(id);
-            while(WAITING_QUEUE.front() != id && PERMISSIONS == 1){}
-            if(!WAITING_QUEUE.empty()){WAITING_QUEUE.pop();}
+            WAITING_QUEUE2[2].push(id);
+            while(WAITING_QUEUE2[2].front() != id && PERMISSIONS2[2] == 1){}
+            if(!WAITING_QUEUE2[2].empty()){WAITING_QUEUE2[2].pop();}
         }
-        PERMISSIONS = 1;
+        PERMISSIONS2[2] = 1;
         int decimal_value = ConvertToDecimalValue(stoul(data.addressRAMResult));
 
         memory.WriteMem(decimal_value, registers.acessoLeituraRegistradores[nameregister]());
         LAST_ADDRESS++;
-        PERMISSIONS = 0;
+        PERMISSIONS2[2] = 0;
     }
 
     return;
@@ -315,7 +324,7 @@ void Control_Unit::Execute_Aritmetic_Operation(REGISTER_BANK &registers,Instruct
         return;
 }
 
-void Control_Unit::Execute_Loop_Operation(REGISTER_BANK &registers,Instruction_Data &data, int &counter, int& counterForEnd, bool& programEnd, MainMemory& ram, queue<int>& WAITING_QUEUE, int& PERMISSIONS, int id){
+void Control_Unit::Execute_Loop_Operation(REGISTER_BANK &registers,Instruction_Data &data, int &counter, int& counterForEnd, bool& programEnd, MainMemory& ram, int id){
     
     string nameregistersource = this->map.mp[data.source_register];
     string nametargetregister = this->map.mp[data.target_register];
@@ -329,15 +338,15 @@ void Control_Unit::Execute_Loop_Operation(REGISTER_BANK &registers,Instruction_D
         if(alu.result == 1){
             int decimal_value = ConvertToDecimalValue(stoul(data.addressRAMResult));
             registers.pc.write(decimal_value);
-            if(PERMISSIONS == 1)
+            if(PERMISSIONS2[0] == 1)
             {
-                WAITING_QUEUE.push(id);
-                while(WAITING_QUEUE.front() != id && PERMISSIONS == 1){}
-                if(!WAITING_QUEUE.empty()){WAITING_QUEUE.pop();}
+                WAITING_QUEUE2[0].push(id);
+                while(WAITING_QUEUE2[0].front() != id && PERMISSIONS2[0] == 1){}
+                if(!WAITING_QUEUE2[0].empty()){WAITING_QUEUE2[0].pop();}
             }
-            PERMISSIONS = 1;
+            PERMISSIONS2[0] = 1;
             registers.ir.write(ram.ReadMem(registers.pc.read()));
-            PERMISSIONS = 0;
+            PERMISSIONS2[0] = 0;
             counter = 0;
             counterForEnd = 5;
             programEnd = false;
@@ -350,15 +359,15 @@ void Control_Unit::Execute_Loop_Operation(REGISTER_BANK &registers,Instruction_D
         if(alu.result == 1){
             int decimal_value = ConvertToDecimalValue(stoul(data.addressRAMResult));
             registers.pc.write(decimal_value);
-            if(PERMISSIONS == 1)
+            if(PERMISSIONS2[0] == 1)
             {
-                WAITING_QUEUE.push(id);
-                while(WAITING_QUEUE.front() != id && PERMISSIONS == 1){}
-                if(!WAITING_QUEUE.empty()){WAITING_QUEUE.pop();}
+                WAITING_QUEUE2[0].push(id);
+                while(WAITING_QUEUE2[0].front() != id && PERMISSIONS2[0] == 1){}
+                if(!WAITING_QUEUE2[0].empty()){WAITING_QUEUE2[0].pop();}
             }
-            PERMISSIONS = 1;
+            PERMISSIONS2[0] = 1;
             registers.ir.write(ram.ReadMem(registers.pc.read()));
-            PERMISSIONS = 0;
+            PERMISSIONS2[0] = 0;
             counter = 0;
             counterForEnd = 5;
             programEnd = false;
@@ -366,15 +375,15 @@ void Control_Unit::Execute_Loop_Operation(REGISTER_BANK &registers,Instruction_D
     }else if(data.op == "J"){
         int decimal_value = ConvertToDecimalValue(stoul(data.addressRAMResult));
         registers.pc.write(decimal_value);
-        if(PERMISSIONS == 1)
+        if(PERMISSIONS2[0] == 1)
         {
-            WAITING_QUEUE.push(id);
-            while(WAITING_QUEUE.front() != id && PERMISSIONS == 1){}
-            if(!WAITING_QUEUE.empty()){WAITING_QUEUE.pop();}
+            WAITING_QUEUE2[0].push(id);
+            while(WAITING_QUEUE2[0].front() != id && PERMISSIONS2[0] == 1){}
+            if(!WAITING_QUEUE2[0].empty()){WAITING_QUEUE2[0].pop();}
         }
-        PERMISSIONS = 1;
+        PERMISSIONS2[0] = 1;
         registers.ir.write(ram.ReadMem(registers.pc.read()));
-        PERMISSIONS = 0;
+        PERMISSIONS2[0] = 0;
 
         counter = 0;
         counterForEnd = 5;
@@ -387,15 +396,15 @@ void Control_Unit::Execute_Loop_Operation(REGISTER_BANK &registers,Instruction_D
         if(alu.result == 1){
             int decimal_value = ConvertToDecimalValue(stoul(data.addressRAMResult));
             registers.pc.write(decimal_value);
-            if(PERMISSIONS == 1)
+            if(PERMISSIONS2[0] == 1)
             {
-                WAITING_QUEUE.push(id);
-                while(WAITING_QUEUE.front() != id && PERMISSIONS == 1){}
-                if(!WAITING_QUEUE.empty()){WAITING_QUEUE.pop();}
+                WAITING_QUEUE2[0].push(id);
+                while(WAITING_QUEUE2[0].front() != id && PERMISSIONS2[0] == 1){}
+                if(!WAITING_QUEUE2[0].empty()){WAITING_QUEUE2[0].pop();}
             }
-            PERMISSIONS = 1;
+            PERMISSIONS2[0] = 1;
             registers.ir.write(ram.ReadMem(registers.pc.read()));
-            PERMISSIONS = 0;
+            PERMISSIONS2[0] = 0;
             counter = 0;
             counterForEnd = 5;
             programEnd = false;
@@ -408,15 +417,15 @@ void Control_Unit::Execute_Loop_Operation(REGISTER_BANK &registers,Instruction_D
         if(alu.result == 1){
             int decimal_value = ConvertToDecimalValue(stoul(data.addressRAMResult));
             registers.pc.write(decimal_value);
-            if(PERMISSIONS == 1)
+            if(PERMISSIONS2[0] == 1)
             {
-                WAITING_QUEUE.push(id);
-                while(WAITING_QUEUE.front() != id && PERMISSIONS == 1){}
-                if(!WAITING_QUEUE.empty()){WAITING_QUEUE.pop();}
+                WAITING_QUEUE2[0].push(id);
+                while(WAITING_QUEUE2[0].front() != id && PERMISSIONS2[0] == 1){}
+                if(!WAITING_QUEUE2[0].empty()){WAITING_QUEUE2[0].pop();}
             }
-            PERMISSIONS = 1;
+            PERMISSIONS2[0] = 1;
             registers.ir.write(ram.ReadMem(registers.pc.read()));
-            PERMISSIONS = 0;
+            PERMISSIONS2[0] = 0;
             counter = 0;
             counterForEnd = 5;
             programEnd = false;
@@ -429,15 +438,15 @@ void Control_Unit::Execute_Loop_Operation(REGISTER_BANK &registers,Instruction_D
         if(alu.result == 1){
             int decimal_value = ConvertToDecimalValue(stoul(data.addressRAMResult));
             registers.pc.write(decimal_value);
-            if(PERMISSIONS == 1)
+            if(PERMISSIONS2[0] == 1)
             {
-                WAITING_QUEUE.push(id);
-                while(WAITING_QUEUE.front() != id && PERMISSIONS == 1){}
-                if(!WAITING_QUEUE.empty()){WAITING_QUEUE.pop();}
+                WAITING_QUEUE2[0].push(id);
+                while(WAITING_QUEUE2[0].front() != id && PERMISSIONS2[0] == 1){}
+                if(!WAITING_QUEUE2[0].empty()){WAITING_QUEUE2[0].pop();}
             }
-            PERMISSIONS = 1;
+            PERMISSIONS2[0] = 1;
             registers.ir.write(ram.ReadMem(registers.pc.read()));
-            PERMISSIONS = 0;
+            PERMISSIONS2[0] = 0;
             counter = 0;
             counterForEnd = 5;
             programEnd = false;
@@ -450,15 +459,15 @@ void Control_Unit::Execute_Loop_Operation(REGISTER_BANK &registers,Instruction_D
         if(alu.result == 1){
             int decimal_value = ConvertToDecimalValue(stoul(data.addressRAMResult));
             registers.pc.write(decimal_value);
-            if(PERMISSIONS == 1)
+            if(PERMISSIONS2[0] == 1)
             {
-                WAITING_QUEUE.push(id);
-                while(WAITING_QUEUE.front() != id && PERMISSIONS == 1){}
-                if(!WAITING_QUEUE.empty()){WAITING_QUEUE.pop();}
+                WAITING_QUEUE2[0].push(id);
+                while(WAITING_QUEUE2[0].front() != id && PERMISSIONS2[0] == 1){}
+                if(!WAITING_QUEUE2[0].empty()){WAITING_QUEUE2[0].pop();}
             }
-            PERMISSIONS = 1;
+            PERMISSIONS2[0] = 1;
             registers.ir.write(ram.ReadMem(registers.pc.read()));
-            PERMISSIONS = 0;
+            PERMISSIONS2[0] = 0;
             counter = 0;
             counterForEnd = 5;
             programEnd = false;
@@ -471,7 +480,7 @@ void Control_Unit::Execute_Operation(REGISTER_BANK &registers,Instruction_Data &
     string nameregister = this->map.mp[data.target_register];
 
     if(data.op == "PRINT" && data.target_register != ""){
-        cout << "PROGRAM PRINT: " << registers.acessoLeituraRegistradores[nameregister]() <<"\r"<< endl; //VALORES 
+        cout << "PROGRAM PRINT: " << registers.acessoLeituraRegistradores[nameregister]() << endl; //VALORES 
     }
 }
 

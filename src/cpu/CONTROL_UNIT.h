@@ -58,14 +58,14 @@ struct Control_Unit{
     string Get_source_Register(const uint32_t instruction);
 
     string Identificacao_instrucao(uint32_t instruction, REGISTER_BANK &registers);
-    void Fetch(REGISTER_BANK &registers, bool &endProgram,MainMemory &ram,PCB &pcb, queue<int>& WAITING_QUEUE, int& PERMISSIONS, int id);
+    void Fetch(REGISTER_BANK &registers, bool &endProgram,MainMemory &ram,PCB &pcb, int id);
     void Decode(REGISTER_BANK &registers, Instruction_Data &data);
     void Execute_Aritmetic_Operation(REGISTER_BANK &registers,Instruction_Data &data);
     void Execute_Operation(REGISTER_BANK &registers,Instruction_Data &data);
-    void Execute_Loop_Operation(REGISTER_BANK &registers,Instruction_Data &data, int &counter, int &counterForEnd, bool& endProgram, MainMemory& ram, queue<int>& WAITING_QUEUE, int& PERMISSIONS, int id); 
-    void Execute(REGISTER_BANK &registers, Instruction_Data &data, int &counter, int &counterForEnd, bool& endProgram, MainMemory& ram, queue<int>& WAITING_QUEUE, int& PERMISSIONS, int id);
-    void Memory_Acess(REGISTER_BANK &registers,Instruction_Data &data, MainMemory &memory, queue<int>& WAITING_QUEUE, int& PERMISSIONS, int id);
-    void Write_Back(Instruction_Data &data, MainMemory &memory,REGISTER_BANK &registers, queue<int>& WAITING_QUEUE, int& PERMISSIONS, int id,int &LAST_ADDRESS);
+    void Execute_Loop_Operation(REGISTER_BANK &registers,Instruction_Data &data, int &counter, int &counterForEnd, bool& endProgram, MainMemory& ram, int id); 
+    void Execute(REGISTER_BANK &registers, Instruction_Data &data, int &counter, int &counterForEnd, bool& endProgram, MainMemory& ram, int id);
+    void Memory_Acess(REGISTER_BANK &registers,Instruction_Data &data, MainMemory &memory, int id);
+    void Write_Back(Instruction_Data &data, MainMemory &memory,REGISTER_BANK &registers, int id,int &LAST_ADDRESS);
 };
 
 #endif

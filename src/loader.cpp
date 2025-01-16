@@ -24,7 +24,7 @@ PCB loadProgram(const std::string& inputFile, MainMemory & ram, int id, int &LAS
     std::unordered_map<std::string, int> labelAddresses;
     std::unordered_map<std::string, int> variableAddresses;
     std::vector<std::string> instructions;
-    int address = LAST_ADDRESS+1;
+    int address = LAST_ADDRESS;
     
     int QUANTUM = 0;
     
@@ -96,8 +96,8 @@ PCB loadProgram(const std::string& inputFile, MainMemory & ram, int id, int &LAS
     }
 
     
-    int memAddress = LAST_ADDRESS + 1;
-    int InitialAdress = LAST_ADDRESS + 1;
+    int memAddress = LAST_ADDRESS;
+    int InitialAdress = LAST_ADDRESS;
     
     for (auto instruction : instructions) {
         for (const auto& [label, addr] : labelAddresses) {
@@ -136,12 +136,12 @@ PCB loadProgram(const std::string& inputFile, MainMemory & ram, int id, int &LAS
         memAddress++;
     }
 
-    LAST_ADDRESS = address + 1;
-    QUANTUM = (instructions.size()) / 5;        // A Cada 5 instruções => +1 QUANTUM 
+    LAST_ADDRESS = address+ 1;
+    QUANTUM = 10;         
     int STATE = 0;
-    
+
     //Output the loaded memory for verification
-    // for (size_t i = 0; i < 70; ++i) {
+    // for (size_t i = 0; i < 130; ++i) {
     //    std::cout << "Address " << (i) << ": " << std::bitset<32>(ram.ReadMem(i)) << std::endl;
     // }
 
