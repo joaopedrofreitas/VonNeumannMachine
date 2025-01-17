@@ -1,3 +1,26 @@
+# Compilação e Execução
+
+<p>
+   Para fins de comparação de tempo de execução entre escalonadores esse trabalho pode ser executado com 3 paramentros diferentes (Colocado á frente do nome dos arquivos de deseja executar) para escolher qual o escalonador desejado, seguindo esta tabela temos:
+   <table>
+   <tr> <td> <u> 0 </u> </td> <td> Escalonador First come, First Service (FCFS)      </td> </tr>
+   <tr> <td> <u> 1 </u> </td> <td> Escalonador Lottery Scheduling        (Bilheteria)</td> </tr>
+   <tr> <td> <u> 2 </u> </td> <td> Escalonador Shortest Job First        (SJF)       </td> </tr>
+   </table>
+    <i>Este código possui um arquivo CmakeLists.txt</br>As diretrizes de execução e compilação deste Cmake são:<i>
+    <table border="1">
+      <tr><td><u> cmake CMakeLists.txt </u></td> <td> define as instruções e regras para compilar e construir o projeto </td></tr>
+      <tr><td><u> make </u></td> <td> Executa a compilação do programa </td></tr>
+      <tr><td><u> ./Assembler testes/example.asm testes/example2.asm   </td> <td> Gerar o Binario dos programas Assembly </td></tr>
+      <tr><td><u> ./CustomVonNeumannMachine output1.bin output2.bin <b>0</b>  </td> <td> Executar o programa com 2 processos com o escalonador FCFS (Por causa do 0 colocado á frente do nome dos arquivos)</td><tr>
+    </table>
+    <i>Caso deseje executar com mais processos, basta acresecentar o nome do arquivos junto aos executaveis das 2 ultimas instruçõe. Veja abaixo um exemplo para 3 processos:<i>
+    <table border="1">
+      <tr><td><u>./Assembler testes/example.asm testes/example2.asm testes/example3.asm</td> <td>Gerar o Binario dos programas Assembly</td></tr>
+      <tr><td><u> ./CustomVonNeumannMachine output1.bin output2.bin output3.bin <b>0</b>  </td>  <td> Executar o programa com 3 processos com o escalonador FCFS(Por causa do 0 colocado á frente do nome dos arquivos) </td></tr>
+    </table>
+</p>
+
 # INTRODUÇÃO
 
 O arquivo que está a ser lido, é referente a documentação do 1º Trabalho prático da disciplina de Sistemas Operacionais,
@@ -267,24 +290,6 @@ add $t0 $zero $t1
 blt $t0 $t3 loop
 
 ```
-
-# Compilação e Execução
-
-<p>
-    <i>Este código possui um arquivo CmakeLists.txt</br>As diretrizes de execução deste Cmake são:<i>
-    <table border="1">
-      <tr><td><u>cmake CMakeLists.txt</u></td> <td>define as instruções e regras para compilar e construir o projeto</td></tr>
-      <tr><td><u>make</u></td> <td>Executa a compilação do programa</td></tr>
-      <tr><td><u>./Assembler testes/example.asm testes/example2.asm</td> <td>Gerar o Binario dos programas Assembly</td></tr>
-      <tr><td><u>./CustomVonNeumannMachine output1.bin output2.bin</td>  <td> Executar o programa com 2 processos</td></tr>
-    </table>
-    <i>Caso deseje executar com mais processos, basta acresecentar o nome do arquivos junto aos executaveis das 2 ultimas instruçõe. Veja abaixo um exemplo para 3 processos:<i>
-    <table border="1">
-      <tr><td><u>./Assembler testes/example.asm testes/example2.asm testes/example3.asm</td> <td>Gerar o Binario dos programas Assembly</td></tr>
-      <tr><td><u>./CustomVonNeumannMachine output1.bin output2.bin output3.bin</td>  <td> Executar o programa com 3 processos</td></tr>
-    </table>
-</p>
-
 # Autores
 João Pedro Freitas de Paula Dias <br>
 Leandro Sousa Costa <br>

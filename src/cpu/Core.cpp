@@ -14,7 +14,7 @@ using namespace std;
 
 struct ComparePCB {
     bool operator()(const PCB& a, const PCB& b) {
-        return a.COST > b.COST; // PCB com menor COST tem maior prioridade
+        return a.COST > b.COST;     // PCB com menor COST tem maior prioridade
     }
 };
 
@@ -35,8 +35,6 @@ int random_number(int min, int max) {
 
     return distr(gen);
 }
-
-
 
 struct ThreadArgs {
     int core_id;
@@ -69,27 +67,27 @@ void* CoreFunction(void* args){      //FCFS
         CONTADOR_RUNNING++;
         if(!READY_QUEUE.empty()){READY_QUEUE.pop();}
     } else {
-        while(CONTADOR_RUNNING >= N_PROCESS && READY_QUEUE.front().process_id != Processo.process_id){}
+        while(CONTADOR_RUNNING >= N_PROCESS && READY_QUEUE.front().process_id != core_id){}
         CONTADOR_RUNNING++;
         if(!READY_QUEUE.empty()){READY_QUEUE.pop();}
     }
 
     while (counterForEnd > 0) {
         if (counter >= 4 && counterForEnd >= 1) {
-            UC.Write_Back(UC.data[counter - 4], ram, registers, Processo.process_id, LAST_ADDRESS);
+            UC.Write_Back(UC.data[counter - 4], ram, registers, core_id, LAST_ADDRESS);
         }
         if (counter >= 3 && counterForEnd >= 2) {
-            UC.Memory_Acess(registers, UC.data[counter - 3], ram, Processo.process_id);
+            UC.Memory_Acess(registers, UC.data[counter - 3], ram, core_id);
         }
         if (counter >= 2 && counterForEnd >= 3) {
-            UC.Execute(registers, UC.data[counter - 2], counter, counterForEnd, endProgram, ram, Processo.process_id);
+            UC.Execute(registers, UC.data[counter - 2], counter, counterForEnd, endProgram, ram, core_id);
         }
         if (counter >= 1 && counterForEnd >= 4) {
             UC.Decode(registers, UC.data[counter - 1]);
         }
         if (counter >= 0 && counterForEnd == 5) {
             UC.data.push_back(data);
-            UC.Fetch(registers, endProgram, ram, Processo, Processo.process_id);
+            UC.Fetch(registers, endProgram, ram, Processo, core_id);
         }
 
         counter += 1;
@@ -99,21 +97,20 @@ void* CoreFunction(void* args){      //FCFS
         if (endProgram == true) {
             counterForEnd = -1;
         }
-        else{
-            if((Processo.QUANTUM - timestamp) == 0) {
-                CONTADOR_RUNNING--;            
-                READY_QUEUE.push(Processo);
-                while(CONTADOR_RUNNING >= N_PROCESS && READY_QUEUE.front().process_id != Processo.process_id){}
-                CONTADOR_RUNNING++;
-                if(!READY_QUEUE.empty()){READY_QUEUE.pop();}
-            }
+        if((Processo.QUANTUM - timestamp) == 0 && counterForEnd != 0) {
+
+            CONTADOR_RUNNING--;            
+            READY_QUEUE.push(Processo);
+            while(CONTADOR_RUNNING >= N_PROCESS && READY_QUEUE.front().process_id != core_id){}
+            CONTADOR_RUNNING++;
+            if(!READY_QUEUE.empty()){READY_QUEUE.pop();}
+
         }
     }
 
     auto end_time = chrono::high_resolution_clock::now();
     chrono::duration<double> elapsed_time = end_time - start_time;
 
-    //cout << fixed << setprecision(7);
     printf("Core %d finalizado. Tempo de execução: %.7f segundos.\n", core_id, elapsed_time.count());
 
     CONTADOR_RUNNING--;
@@ -147,29 +144,28 @@ void* CoreFunction_Lottery(void* args){      //Loteria
         CONTADOR_RUNNING++;
         if(!READY_QUEUE.empty()){READY_QUEUE.pop();}
     } else {
-        //cout<<"VALOR DO TICKET: "<<CURRENT_TICKET<<endl;
         auto K = find(begin(Processo.Tickets), end(Processo.Tickets),CURRENT_TICKET);
-        while(CONTADOR_RUNNING >= N_PROCESS && READY_QUEUE.front().process_id != Processo.process_id && K == end(Processo.Tickets)){K = find(begin(Processo.Tickets), end(Processo.Tickets),CURRENT_TICKET);}
+        while(CONTADOR_RUNNING >= N_PROCESS && READY_QUEUE.front().process_id != core_id && K == end(Processo.Tickets)){K = find(begin(Processo.Tickets), end(Processo.Tickets),CURRENT_TICKET);}
         CONTADOR_RUNNING++;
         if(!READY_QUEUE.empty()){READY_QUEUE.pop();}
     }
 
     while (counterForEnd > 0) {
         if (counter >= 4 && counterForEnd >= 1) {
-            UC.Write_Back(UC.data[counter - 4], ram, registers, Processo.process_id, LAST_ADDRESS);
+            UC.Write_Back(UC.data[counter - 4], ram, registers, core_id, LAST_ADDRESS);
         }
         if (counter >= 3 && counterForEnd >= 2) {
-            UC.Memory_Acess(registers, UC.data[counter - 3], ram, Processo.process_id);
+            UC.Memory_Acess(registers, UC.data[counter - 3], ram, core_id);
         }
         if (counter >= 2 && counterForEnd >= 3) {
-            UC.Execute(registers, UC.data[counter - 2], counter, counterForEnd, endProgram, ram, Processo.process_id);
+            UC.Execute(registers, UC.data[counter - 2], counter, counterForEnd, endProgram, ram, core_id);
         }
         if (counter >= 1 && counterForEnd >= 4) {
             UC.Decode(registers, UC.data[counter - 1]);
         }
         if (counter >= 0 && counterForEnd == 5) {
             UC.data.push_back(data);
-            UC.Fetch(registers, endProgram, ram, Processo, Processo.process_id);
+            UC.Fetch(registers, endProgram, ram, Processo, core_id);
         }
 
         counter += 1;
@@ -179,24 +175,23 @@ void* CoreFunction_Lottery(void* args){      //Loteria
         if (endProgram == true) {
             counterForEnd = -1;
         }
-        else{
-            if((Processo.QUANTUM - timestamp) == 0) {
-                //cout<<"OCORREU CHAVEAMENTO -> VALOR DO TICKET: "<<CURRENT_TICKET<<endl;
-                CURRENT_TICKET = random_number(0, max);
-                auto K = find(begin(Processo.Tickets), end(Processo.Tickets),CURRENT_TICKET);
-                CONTADOR_RUNNING--;            
-                READY_QUEUE.push(Processo);
-                while(CONTADOR_RUNNING >= N_PROCESS && READY_QUEUE.front().process_id != Processo.process_id && K == end(Processo.Tickets)){K = find(begin(Processo.Tickets), end(Processo.Tickets),CURRENT_TICKET);}
-                CONTADOR_RUNNING++;
-                if(!READY_QUEUE.empty()){READY_QUEUE.pop();}
-            }
+        if((Processo.QUANTUM - timestamp) == 0 && counterForEnd != 0) {
+
+            //cout<<"OCORREU CHAVEAMENTO -> VALOR DO TICKET: "<<CURRENT_TICKET<<endl;
+            CURRENT_TICKET = random_number(0, max);
+            auto K = find(begin(Processo.Tickets), end(Processo.Tickets),CURRENT_TICKET);
+            CONTADOR_RUNNING--;            
+            READY_QUEUE.push(Processo);
+            while(CONTADOR_RUNNING >= N_PROCESS && READY_QUEUE.front().process_id != core_id && K == end(Processo.Tickets)){K = find(begin(Processo.Tickets), end(Processo.Tickets),CURRENT_TICKET);}
+            CONTADOR_RUNNING++;
+            if(!READY_QUEUE.empty()){READY_QUEUE.pop();}
+
         }
     }
 
     auto end_time = chrono::high_resolution_clock::now();
     chrono::duration<double> elapsed_time = end_time - start_time;
 
-    //cout << fixed << setprecision(7);
     printf("Core %d finalizado. Tempo de execução: %.7f segundos.\n", core_id, elapsed_time.count());
 
     CONTADOR_RUNNING--;
@@ -230,20 +225,20 @@ void* CoreFunction_SJF(void* args){      //SJF
         CONTADOR_RUNNING++;
         if(!PRIORITY_READY_QUEUE.empty()){PRIORITY_READY_QUEUE.pop();}
     } else {
-        while(CONTADOR_RUNNING >= N_PROCESS && PRIORITY_READY_QUEUE.top().process_id != Processo.process_id){}
+        while(CONTADOR_RUNNING >= N_PROCESS && PRIORITY_READY_QUEUE.top().process_id != core_id){PRIORITY_READY_QUEUE.push(Processo);}
         CONTADOR_RUNNING++;
         if(!PRIORITY_READY_QUEUE.empty()){PRIORITY_READY_QUEUE.pop();}
     }
 
     while (counterForEnd > 0) {
         if (counter >= 4 && counterForEnd >= 1) {
-            UC.Write_Back(UC.data[counter - 4], ram, registers, Processo.process_id, LAST_ADDRESS);
+            UC.Write_Back(UC.data[counter - 4], ram, registers, core_id, LAST_ADDRESS);
         }
         if (counter >= 3 && counterForEnd >= 2) {
-            UC.Memory_Acess(registers, UC.data[counter - 3], ram, Processo.process_id);
+            UC.Memory_Acess(registers, UC.data[counter - 3], ram, core_id);
         }
         if (counter >= 2 && counterForEnd >= 3) {
-            UC.Execute(registers, UC.data[counter - 2], counter, counterForEnd, endProgram, ram, Processo.process_id);
+            UC.Execute(registers, UC.data[counter - 2], counter, counterForEnd, endProgram, ram, core_id);
             Processo.COST-=1;
         }
         if (counter >= 1 && counterForEnd >= 4) {
@@ -251,7 +246,7 @@ void* CoreFunction_SJF(void* args){      //SJF
         }
         if (counter >= 0 && counterForEnd == 5) {
             UC.data.push_back(data);
-            UC.Fetch(registers, endProgram, ram, Processo, Processo.process_id);
+            UC.Fetch(registers, endProgram, ram, Processo, core_id);
         }
 
         counter += 1;
@@ -261,14 +256,14 @@ void* CoreFunction_SJF(void* args){      //SJF
         if (endProgram == true) {
             counterForEnd = -1;
         }
-        else{
-            if((Processo.QUANTUM - timestamp) == 0 && Processo.COST != 0) {
-                CONTADOR_RUNNING--;            
-                PRIORITY_READY_QUEUE.push(Processo);
-                while(CONTADOR_RUNNING >= N_PROCESS && PRIORITY_READY_QUEUE.top().process_id != Processo.process_id){}
-                CONTADOR_RUNNING++;
-                if(!PRIORITY_READY_QUEUE.empty()){PRIORITY_READY_QUEUE.pop();}
-            }
+        if((Processo.QUANTUM - timestamp) == 0 && counterForEnd != 0) {
+
+            CONTADOR_RUNNING--;            
+            PRIORITY_READY_QUEUE.push(Processo);
+            while(CONTADOR_RUNNING >= N_PROCESS && PRIORITY_READY_QUEUE.top().process_id != core_id){PRIORITY_READY_QUEUE.push(Processo);}
+            CONTADOR_RUNNING++;
+            if(!PRIORITY_READY_QUEUE.empty()){PRIORITY_READY_QUEUE.pop();}
+
         }
     }
 

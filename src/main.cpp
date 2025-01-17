@@ -66,6 +66,7 @@ int main(int argc, char* argv[]) {
                 return 1;
             }
             if(!READY_QUEUE.empty()){READY_QUEUE.pop();}
+            if(!PRIORITY_READY_QUEUE.empty()){PRIORITY_READY_QUEUE.pop();}
         }
 
         for (int i = 0; i < (argc-2); i++){
