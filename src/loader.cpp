@@ -139,12 +139,13 @@ PCB loadProgram(const std::string& inputFile, MainMemory & ram, int id, int &LAS
     LAST_ADDRESS = address+ 1;
     QUANTUM = 10;         
     int STATE = 0;
+    int COST = instructions.size();
 
     //Output the loaded memory for verification
     // for (size_t i = 0; i < 130; ++i) {
     //    std::cout << "Address " << (i) << ": " << std::bitset<32>(ram.ReadMem(i)) << std::endl;
     // }
 
-    PCB processo = PCB(id,QUANTUM,InitialAdress);
+    PCB processo = PCB(id,QUANTUM,InitialAdress,COST);
     return processo;
 }

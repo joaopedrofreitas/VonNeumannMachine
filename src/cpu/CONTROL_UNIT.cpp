@@ -38,7 +38,7 @@ void Control_Unit::Fetch(REGISTER_BANK &registers, bool &endProgram, MainMemory 
         endProgram = true;
         return;
     }
-    registers.pc.write(pcb.program_counter);
+    //registers.pc.write(pcb.program_counter);
     registers.mar.write(registers.pc.value);
     if(PERMISSIONS2[0] == 1)
     {
@@ -104,7 +104,7 @@ void Control_Unit::Execute(REGISTER_BANK &registers,Instruction_Data &data, int 
             if(!WAITING_QUEUE2[1].empty()){WAITING_QUEUE2[1].pop();}
         }
         PERMISSIONS2[1] = 1;
-        Execute_Operation(registers,data);
+        Execute_Operation(registers,data,id);
         PERMISSIONS2[1] = 0;
     }
 
@@ -150,7 +150,7 @@ void Control_Unit::Memory_Acess(REGISTER_BANK &registers,Instruction_Data &data,
             if(!WAITING_QUEUE2[1].empty()){WAITING_QUEUE2[1].pop();}
         }
         PERMISSIONS2[1] = 1;
-        cout << "PROGRAM PRINT: " << value <<endl; //ENDEREÇO DE MEMORIA
+        printf("PROGRAM PRINT [PROCESSO %d]: %" PRIu32 "\n",id , value); //ENDEREÇO DE MEMORIA
         PERMISSIONS2[1] = 0;
     }
 
@@ -476,11 +476,11 @@ void Control_Unit::Execute_Loop_Operation(REGISTER_BANK &registers,Instruction_D
     return;
 }
 
-void Control_Unit::Execute_Operation(REGISTER_BANK &registers,Instruction_Data &data){
+void Control_Unit::Execute_Operation(REGISTER_BANK &registers,Instruction_Data &data,int id){
     string nameregister = this->map.mp[data.target_register];
 
     if(data.op == "PRINT" && data.target_register != ""){
-        cout << "PROGRAM PRINT: " << registers.acessoLeituraRegistradores[nameregister]() << endl; //VALORES 
+        printf("PROGRAM PRINT [PROCESSO %d]: %" PRIu32 "\n", id ,  registers.acessoLeituraRegistradores[nameregister]());
     }
 }
 

@@ -56,6 +56,23 @@ int main(int argc, char* argv[]) {
         }
 
     }
+    else if(argv[argc-1][0]== '2'){
+
+         for (int i = 0; i < (argc-2); i++) {
+            threadArgs[i] = {i, &ram, &READY_QUEUE.front()};
+            if (pthread_create(&threads[i], nullptr, CoreFunction, (void*)&threadArgs[i]) != 0) {
+                std::cerr << "Erro ao criar a thread " << i << std::endl;
+                return 1;
+            }
+            if(!READY_QUEUE.empty()){READY_QUEUE.pop();}
+        }
+
+        for (int i = 0; i < (argc-2); i++){
+            pthread_join(threads[i], nullptr);
+        }
+    }
+
+
     return 0;
 }
 
