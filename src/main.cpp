@@ -22,6 +22,7 @@ int main(int argc, char* argv[]) {
             Bilhetes.push_back(i);
         }
         READY_QUEUE.push(processo);
+        PRIORITY_READY_QUEUE.push(processo); // SJF
     }
 
     if(argv[argc-1][0] == '0'){
@@ -60,7 +61,7 @@ int main(int argc, char* argv[]) {
 
          for (int i = 0; i < (argc-2); i++) {
             threadArgs[i] = {i, &ram, &READY_QUEUE.front()};
-            if (pthread_create(&threads[i], nullptr, CoreFunction, (void*)&threadArgs[i]) != 0) {
+            if (pthread_create(&threads[i], nullptr, CoreFunction_SJF, (void*)&threadArgs[i]) != 0) {
                 std::cerr << "Erro ao criar a thread " << i << std::endl;
                 return 1;
             }
@@ -75,18 +76,3 @@ int main(int argc, char* argv[]) {
 
     return 0;
 }
-
-
-    // for(auto i: READY_QUEUE.front().Tickets){
-    //     cout<<i<<endl;
-    // }
-    // if(!READY_QUEUE.empty()){READY_QUEUE.pop();}
-    // cout<<"\n----\n";
-    // for(auto i: READY_QUEUE.front().Tickets){
-    //     cout<<i<<endl;
-    // }
-    // if(!READY_QUEUE.empty()){READY_QUEUE.pop();}
-    // cout<<"\n----\n";
-    // for(auto i: READY_QUEUE.front().Tickets){
-    //     cout<<i<<endl;
-    // }

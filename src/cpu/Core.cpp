@@ -11,19 +11,27 @@
 #define N_PROCESS 2 
 using namespace std;
 
+
+struct ComparePCB {
+    bool operator()(const PCB& a, const PCB& b) {
+        return a.COST > b.COST; // PCB com menor COST tem maior prioridade
+    }
+};
+
 queue<PCB> READY_QUEUE;
+priority_queue<PCB, vector<PCB>, ComparePCB> PRIORITY_READY_QUEUE;
 int CONTADOR_RUNNING = 0;
 vector<queue<int>> WAITING_QUEUE(3); //LOAD | PRINT | STORE -> I/O REQUESTS
 int LAST_ADDRESS = 0;
 int CURRENT_TICKET = 0;
+int RUNNING_PROCESS_ID = 0;
 
 vector<int> PERMISSIONS = {0,0,0};   //LOAD | PRINT | STORE -> I/O REQUESTS
 
 int random_number(int min, int max) {
-    // Gera um motor aleatório com base no tempo atual
-    std::random_device rd;  // Dispositivo de entropia
-    std::mt19937 gen(rd()); // Mersenne Twister, inicializado com entropia
-    std::uniform_int_distribution<> distr(min, max); // Distribuição uniforme entre min e max
+    std::random_device rd;  
+    std::mt19937 gen(rd()); 
+    std::uniform_int_distribution<> distr(min, max); 
 
     return distr(gen);
 }
@@ -220,11 +228,11 @@ void* CoreFunction_SJF(void* args){      //SJF
    if (CONTADOR_RUNNING < N_PROCESS) {
         Processo.state = RUNNING;
         CONTADOR_RUNNING++;
-        if(!READY_QUEUE.empty()){READY_QUEUE.pop();}
+        if(!PRIORITY_READY_QUEUE.empty()){PRIORITY_READY_QUEUE.pop();}
     } else {
-        while(CONTADOR_RUNNING >= N_PROCESS && READY_QUEUE.front().process_id != Processo.process_id){}
+        while(CONTADOR_RUNNING >= N_PROCESS && PRIORITY_READY_QUEUE.top().process_id != Processo.process_id){}
         CONTADOR_RUNNING++;
-        if(!READY_QUEUE.empty()){READY_QUEUE.pop();}
+        if(!PRIORITY_READY_QUEUE.empty()){PRIORITY_READY_QUEUE.pop();}
     }
 
     while (counterForEnd > 0) {
@@ -236,6 +244,7 @@ void* CoreFunction_SJF(void* args){      //SJF
         }
         if (counter >= 2 && counterForEnd >= 3) {
             UC.Execute(registers, UC.data[counter - 2], counter, counterForEnd, endProgram, ram, Processo.process_id);
+            Processo.COST-=1;
         }
         if (counter >= 1 && counterForEnd >= 4) {
             UC.Decode(registers, UC.data[counter - 1]);
@@ -253,12 +262,12 @@ void* CoreFunction_SJF(void* args){      //SJF
             counterForEnd = -1;
         }
         else{
-            if((Processo.QUANTUM - timestamp) == 0) {
+            if((Processo.QUANTUM - timestamp) == 0 && Processo.COST != 0) {
                 CONTADOR_RUNNING--;            
-                READY_QUEUE.push(Processo);
-                while(CONTADOR_RUNNING >= N_PROCESS && READY_QUEUE.front().process_id != Processo.process_id){}
+                PRIORITY_READY_QUEUE.push(Processo);
+                while(CONTADOR_RUNNING >= N_PROCESS && PRIORITY_READY_QUEUE.top().process_id != Processo.process_id){}
                 CONTADOR_RUNNING++;
-                if(!READY_QUEUE.empty()){READY_QUEUE.pop();}
+                if(!PRIORITY_READY_QUEUE.empty()){PRIORITY_READY_QUEUE.pop();}
             }
         }
     }

@@ -63,7 +63,7 @@ struct Control_Unit{
     void Execute_Aritmetic_Operation(REGISTER_BANK &registers,Instruction_Data &data);
     void Execute_Operation(REGISTER_BANK &registers,Instruction_Data &data,int id);
     void Execute_Loop_Operation(REGISTER_BANK &registers,Instruction_Data &data, int &counter, int &counterForEnd, bool& endProgram, MainMemory& ram, int id); 
-    void Execute(REGISTER_BANK &registers, Instruction_Data &data, int &counter, int &counterForEnd, bool& endProgram, MainMemory& ram, int id);
+    void Execute(REGISTER_BANK &registers, Instruction_Data &data, int &counter, int &counterForEnd, bool& endProgram, MainMemory& ram,int id);
     void Memory_Acess(REGISTER_BANK &registers,Instruction_Data &data, MainMemory &memory, int id);
     void Write_Back(Instruction_Data &data, MainMemory &memory,REGISTER_BANK &registers, int id,int &LAST_ADDRESS);
 };

@@ -90,7 +90,6 @@ void Control_Unit::Decode(REGISTER_BANK &registers, Instruction_Data &data){
 }
 
 void Control_Unit::Execute(REGISTER_BANK &registers,Instruction_Data &data, int &counter, int& counterForEnd,bool& programEnd, MainMemory& ram,int id){
-
     if(data.op == "ADD" ||  data.op == "SUB" || data.op == "MUL" || data.op == "DIV"){
         Execute_Aritmetic_Operation(registers, data);
     }else if(data.op == "BEQ" || data.op == "J" || data.op == "BNE" || data.op == "BGT" || data.op == "BGTI" || data.op == "BLT" || data.op == "BLTI"){
