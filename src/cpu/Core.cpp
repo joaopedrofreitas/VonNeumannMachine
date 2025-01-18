@@ -58,7 +58,7 @@ void* CoreFunction(void* args){      //FCFS
     int counterForEnd = 5;
     int counter = 0;
     int clock = 0;
-    int timestamp = 0;
+    int aux = 0;
 
     auto start_time = chrono::high_resolution_clock::now();
     
@@ -92,26 +92,28 @@ void* CoreFunction(void* args){      //FCFS
 
         counter += 1;
         clock += 1;
-        timestamp += 1;
+        aux += 1;
 
         if (endProgram == true) {
             counterForEnd = -1;
         }
-        if((Processo.QUANTUM - timestamp) == 0 && counterForEnd != 0) {
+        else{
+            if((Processo.QUANTUM - aux) == 0) {
 
-            CONTADOR_RUNNING--;            
-            READY_QUEUE.push(Processo);
-            while(CONTADOR_RUNNING >= N_PROCESS && READY_QUEUE.front().process_id != core_id){}
-            CONTADOR_RUNNING++;
-            if(!READY_QUEUE.empty()){READY_QUEUE.pop();}
+                CONTADOR_RUNNING--;            
+                READY_QUEUE.push(Processo);
+                while(CONTADOR_RUNNING >= N_PROCESS && READY_QUEUE.front().process_id != core_id){}
+                CONTADOR_RUNNING++;
+                if(!READY_QUEUE.empty()){READY_QUEUE.pop();}
 
+            }
         }
     }
 
     auto end_time = chrono::high_resolution_clock::now();
-    chrono::duration<double> elapsed_time = end_time - start_time;
+    chrono::duration<double> timestamp = end_time - start_time;
 
-    printf("Core %d finalizado. Tempo de execução: %.7f segundos.\n", core_id, elapsed_time.count());
+    printf("Core %d finalizado. Tempo de execução: %.7f segundos.\n", core_id, timestamp.count());
 
     CONTADOR_RUNNING--;
     pthread_exit(nullptr);
@@ -135,7 +137,7 @@ void* CoreFunction_Lottery(void* args){      //Loteria
     int counterForEnd = 5;
     int counter = 0;
     int clock = 0;
-    int timestamp = 0;
+    int aux = 0;
 
     auto start_time = chrono::high_resolution_clock::now();
 
@@ -170,29 +172,31 @@ void* CoreFunction_Lottery(void* args){      //Loteria
 
         counter += 1;
         clock += 1;
-        timestamp += 1;
+        aux += 1;
 
         if (endProgram == true) {
             counterForEnd = -1;
         }
-        if((Processo.QUANTUM - timestamp) == 0 && counterForEnd != 0) {
+        else{
+            if((Processo.QUANTUM - aux) == 0) {
 
-            //cout<<"OCORREU CHAVEAMENTO -> VALOR DO TICKET: "<<CURRENT_TICKET<<endl;
-            CURRENT_TICKET = random_number(0, max);
-            auto K = find(begin(Processo.Tickets), end(Processo.Tickets),CURRENT_TICKET);
-            CONTADOR_RUNNING--;            
-            READY_QUEUE.push(Processo);
-            while(CONTADOR_RUNNING >= N_PROCESS && READY_QUEUE.front().process_id != core_id && K == end(Processo.Tickets)){K = find(begin(Processo.Tickets), end(Processo.Tickets),CURRENT_TICKET);}
-            CONTADOR_RUNNING++;
-            if(!READY_QUEUE.empty()){READY_QUEUE.pop();}
+                //cout<<"OCORREU CHAVEAMENTO -> VALOR DO TICKET: "<<CURRENT_TICKET<<endl;
+                CURRENT_TICKET = random_number(0, max);
+                auto K = find(begin(Processo.Tickets), end(Processo.Tickets),CURRENT_TICKET);
+                CONTADOR_RUNNING--;            
+                READY_QUEUE.push(Processo);
+                while(CONTADOR_RUNNING >= N_PROCESS && READY_QUEUE.front().process_id != core_id && K == end(Processo.Tickets)){K = find(begin(Processo.Tickets), end(Processo.Tickets),CURRENT_TICKET);}
+                CONTADOR_RUNNING++;
+                if(!READY_QUEUE.empty()){READY_QUEUE.pop();}
 
+            }
         }
     }
 
     auto end_time = chrono::high_resolution_clock::now();
-    chrono::duration<double> elapsed_time = end_time - start_time;
+    chrono::duration<double> timestamp = end_time - start_time;
 
-    printf("Core %d finalizado. Tempo de execução: %.7f segundos.\n", core_id, elapsed_time.count());
+    printf("Core %d finalizado. Tempo de execução: %.7f segundos.\n", core_id, timestamp.count());
 
     CONTADOR_RUNNING--;
     pthread_exit(nullptr);
@@ -216,7 +220,7 @@ void* CoreFunction_SJF(void* args){      //SJF
     int counterForEnd = 5;
     int counter = 0;
     int clock = 0;
-    int timestamp = 0;
+    int aux = 0;
 
     auto start_time = chrono::high_resolution_clock::now();
     
@@ -251,26 +255,28 @@ void* CoreFunction_SJF(void* args){      //SJF
 
         counter += 1;
         clock += 1;
-        timestamp += 1;
+        aux += 1;
 
         if (endProgram == true) {
             counterForEnd = -1;
         }
-        if((Processo.QUANTUM - timestamp) == 0 && counterForEnd != 0) {
+        else{
+            if((Processo.QUANTUM - aux) == 0 && counterForEnd != 0) {
 
-            CONTADOR_RUNNING--;            
-            PRIORITY_READY_QUEUE.push(Processo);
-            while(CONTADOR_RUNNING >= N_PROCESS && PRIORITY_READY_QUEUE.top().process_id != core_id){PRIORITY_READY_QUEUE.push(Processo);}
-            CONTADOR_RUNNING++;
-            if(!PRIORITY_READY_QUEUE.empty()){PRIORITY_READY_QUEUE.pop();}
+                CONTADOR_RUNNING--;            
+                PRIORITY_READY_QUEUE.push(Processo);
+                while(CONTADOR_RUNNING >= N_PROCESS && PRIORITY_READY_QUEUE.top().process_id != core_id){PRIORITY_READY_QUEUE.push(Processo);}
+                CONTADOR_RUNNING++;
+                if(!PRIORITY_READY_QUEUE.empty()){PRIORITY_READY_QUEUE.pop();}
 
+            }
         }
     }
 
     auto end_time = chrono::high_resolution_clock::now();
-    chrono::duration<double> elapsed_time = end_time - start_time;
+    chrono::duration<double> timestamp = end_time - start_time;
     
-    printf("Core %d finalizado. Tempo de execução: %.7f segundos.\n", core_id, elapsed_time.count());
+    printf("Core %d finalizado. Tempo de execução: %.7f segundos.\n", core_id, timestamp.count());
 
     CONTADOR_RUNNING--;
     pthread_exit(nullptr);

@@ -12,7 +12,7 @@
       <tr><td><u> cmake CMakeLists.txt </u></td> <td> define as instruções e regras para compilar e construir o projeto </td></tr>
       <tr><td><u> make </u></td> <td> Executa a compilação do programa </td></tr>
       <tr><td><u> ./Assembler testes/example.asm testes/example2.asm   </td> <td> Gerar o Binario dos programas Assembly </td></tr>
-      <tr><td><u> ./CustomVonNeumannMachine output1.bin output2.bin <b>0</b>  </td> <td> Executar o programa com 2 processos com o escalonador FCFS (Por causa do 0 colocado á frente do nome dos arquivos)</td><tr>
+      <tr><td><u> ./CustomVonNeumannMachine output1.bin output2.bin <b> 0 </b>  </td> <td> Executar o programa com 2 processos com o escalonador FCFS (Por causa do 0 colocado á frente do nome dos arquivos)</td><tr>
     </table>
     <i>Caso deseje executar com mais processos, basta acresecentar o nome do arquivos junto aos executaveis das 2 ultimas instruçõe. Veja abaixo um exemplo para 3 processos:<i>
     <table border="1">

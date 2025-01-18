@@ -38,7 +38,7 @@ void Control_Unit::Fetch(REGISTER_BANK &registers, bool &endProgram, MainMemory 
         endProgram = true;
         return;
     }
-    //registers.pc.write(pcb.program_counter);
+    registers.pc.write(pcb.program_counter);
     registers.mar.write(registers.pc.value);
     if(PERMISSIONS2[0] == 1)
     {
