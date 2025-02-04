@@ -4,17 +4,19 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <list>
 #include <bitset>
 #include"./memory/MAINMEMORY.h"
 #include"loader.h"
 
 const int MEMORY_SIZE = 2048*2048; // 32-bit address space
+//const size_t MAX_INSTRUCTIONS_PER_PROCESS = 1000; 
 
 std::string padName(const std::string& name) {
     return name + std::string(16 - name.length(), '#');
 }
 
-PCB loadProgram(const std::string& inputFile, MainMemory & ram, int id, int &LAST_ADDRESS, queue<int>& WAITING_QUEUE, int& PERMISSIONS) {
+PCB loadProgram(const std::string& inputFile, MainMemory & ram, int id, int &LAST_ADDRESS, queue<int>& WAITING_QUEUE, int& PERMISSIONS, vector<string>& Instruction_set) {
     std::ifstream file(inputFile);
     if (!file.is_open()) {
         std::cerr << "Error opening file!" << std::endl;
@@ -24,6 +26,7 @@ PCB loadProgram(const std::string& inputFile, MainMemory & ram, int id, int &LAS
     std::unordered_map<std::string, int> labelAddresses;
     std::unordered_map<std::string, int> variableAddresses;
     std::vector<std::string> instructions;
+    //instructions.reserve(MAX_INSTRUCTIONS_PER_PROCESS);
     int address = LAST_ADDRESS;
     
     int QUANTUM = 0;
@@ -141,11 +144,9 @@ PCB loadProgram(const std::string& inputFile, MainMemory & ram, int id, int &LAS
     int STATE = 0;
     int COST = instructions.size();
 
-    //Output the loaded memory for verification
-    // for (size_t i = 0; i < 130; ++i) {
-    //    std::cout << "Address " << (i) << ": " << std::bitset<32>(ram.ReadMem(i)) << std::endl;
-    // }
+    PCB processo = PCB(id,QUANTUM,InitialAdress,COST);
+    Instruction_set = instructions;
 
-    PCB processo = PCB(id,QUANTUM,InitialAdress,COST,instructions);
+    
     return processo;
 }

@@ -4,6 +4,7 @@
 #include <thread>
 #include <mutex>
 #include <atomic>
+#include <list>
 #include <chrono>
 #include "../cpu/REGISTER.h"
 #include "../cpu/REGISTER_BANK.h"
@@ -28,8 +29,7 @@ public:
     ProcessState state;                              // Estado do processo       -> READY, RUNNING, WAITING, TERMINATED  
     vector<pair<REGISTER_BANK, int>> registers;      // Banco de registradores   -> (REGISTRADOR - VALOR)  
     vector<int> Tickets;                             // Bilhetes                 -> Para o Lottery Scheduling
-    vector<string> Instructions;                     // Instruções               -> Para Calculos de Similaridade (CACHE)
     
-    PCB(int id, int exec_time, int base_address,int Cost, vector<string> Instructions)
-        : process_id(id), state(READY), program_counter(base_address), QUANTUM(exec_time), base_address(base_address), COST(Cost), Instructions(Instructions)/*,last_address(last_address)*/{}
+    PCB(int id, int exec_time, int base_address,int Cost)
+        : process_id(id), state(READY), program_counter(base_address), QUANTUM(exec_time), base_address(base_address), COST(Cost){}
 };

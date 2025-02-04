@@ -25,6 +25,7 @@ queue<PCB> READY_QUEUE;
 priority_queue<PCB, vector<PCB>, ComparePCB> PRIORITY_READY_QUEUE;
 int CONTADOR_RUNNING = 0;
 vector<queue<int>> WAITING_QUEUE(3); //LOAD | PRINT | STORE -> I/O REQUESTS
+//vector<map<string,int>> Instruction_set;
 int LAST_ADDRESS = 0;
 int CURRENT_TICKET = 0;
 int RUNNING_PROCESS_ID = 0;

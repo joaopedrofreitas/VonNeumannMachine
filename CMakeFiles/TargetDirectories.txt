@@ -1,4 +1,0 @@
-/home/joaop/TP_02-SO/CustomVonNeumannMachine/CMakeFiles/CustomVonNeumannMachine.dir
-/home/joaop/TP_02-SO/CustomVonNeumannMachine/CMakeFiles/Assembler.dir
-/home/joaop/TP_02-SO/CustomVonNeumannMachine/CMakeFiles/edit_cache.dir
-/home/joaop/TP_02-SO/CustomVonNeumannMachine/CMakeFiles/rebuild_cache.dir
