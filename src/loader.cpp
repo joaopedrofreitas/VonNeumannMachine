@@ -146,6 +146,6 @@ PCB loadProgram(const std::string& inputFile, MainMemory & ram, int id, int &LAS
     //    std::cout << "Address " << (i) << ": " << std::bitset<32>(ram.ReadMem(i)) << std::endl;
     // }
 
-    PCB processo = PCB(id,QUANTUM,InitialAdress,COST);
+    PCB processo = PCB(id,QUANTUM,InitialAdress,COST,instructions);
     return processo;
 }

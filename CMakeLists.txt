@@ -19,6 +19,8 @@ add_executable(CustomVonNeumannMachine
         src/memory/MEMORYCELL.h
         src/memory/MAINMEMORY.h
         src/memory/MAINMEMORY.cpp
+        src/memory/CACHE.h
+        src/memory/CACHE.cpp
 )
 add_executable(Assembler
         assembler/assembler.cpp

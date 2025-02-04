@@ -23,6 +23,8 @@ main:
 	print $t4
 	div $t8, $t5, $t6	# division
 	print $t8
+	add $t3, $t1, $t0	# Add
+	print $t3
 	sw $t4, Z		# Store the answer in Z (declared at the bottom)  
 	print Z
 

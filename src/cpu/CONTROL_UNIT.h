@@ -9,6 +9,10 @@
 #include"HashRegister.h"
 #include"unordered_map"
 #include"../memory/MAINMEMORY.h"
+#include"../memory/CACHE.h"
+#define NO_COLOR "\x1b[0;0m"
+#define BRIGHT_GREEN "\x1b[92;1m"
+#define BRIGHT_CYAN "\x1b[96;1m"
 #include <cstdint>
 #include <cmath>
 
@@ -51,6 +55,14 @@ struct Control_Unit{
         {"end", "111111"}
     };
 
+    unordered_map<string,string> Operators ={
+        {"ADD", "+"},
+        {"SUB","-"},
+        {"MUL","*"},
+        {"DIV","/"}
+    };
+
+
     string Get_immediate(const uint32_t instruction);
     string Pick_Code_Register_Load(const uint32_t instruction);
     string Get_destination_Register(const uint32_t instruction);
@@ -60,10 +72,10 @@ struct Control_Unit{
     string Identificacao_instrucao(uint32_t instruction, REGISTER_BANK &registers);
     void Fetch(REGISTER_BANK &registers, bool &endProgram,MainMemory &ram,PCB &pcb, int id);
     void Decode(REGISTER_BANK &registers, Instruction_Data &data);
-    void Execute_Aritmetic_Operation(REGISTER_BANK &registers,Instruction_Data &data);
+    void Execute_Aritmetic_Operation(REGISTER_BANK &registers,Instruction_Data &data, Cache_Memory& Cache);
     void Execute_Operation(REGISTER_BANK &registers,Instruction_Data &data,int id);
-    void Execute_Loop_Operation(REGISTER_BANK &registers,Instruction_Data &data, int &counter, int &counterForEnd, bool& endProgram, MainMemory& ram, int id); 
-    void Execute(REGISTER_BANK &registers, Instruction_Data &data, int &counter, int &counterForEnd, bool& endProgram, MainMemory& ram,int id);
+    void Execute_Loop_Operation(REGISTER_BANK &registers,Instruction_Data &data, int &counter, int &counterForEnd, bool& endProgram, MainMemory& ram,Cache_Memory& Cache,int id); 
+    void Execute(REGISTER_BANK &registers,Instruction_Data &data, int &counter, int& counterForEnd,bool& programEnd, MainMemory& ram,Cache_Memory& Cache,int id);
     void Memory_Acess(REGISTER_BANK &registers,Instruction_Data &data, MainMemory &memory, int id);
     void Write_Back(Instruction_Data &data, MainMemory &memory,REGISTER_BANK &registers, int id,int &LAST_ADDRESS);
 };

@@ -5,7 +5,8 @@
 // - Implement print, li, la, lw, sw, j
 
 vector<queue<int>> WAITING_QUEUE2(3); //LOAD | PRINT | STORE
-vector<int> PERMISSIONS2 = {0,0,0}; //LOAD | PRINT | STORE
+vector<int> PERMISSIONS2 = {0,0,0};   //LOAD | PRINT | STORE
+
 
 uint32_t ConvertToDecimalValue(uint32_t value){
     string bin_str = to_string(value);
@@ -89,11 +90,11 @@ void Control_Unit::Decode(REGISTER_BANK &registers, Instruction_Data &data){
     return;
 }
 
-void Control_Unit::Execute(REGISTER_BANK &registers,Instruction_Data &data, int &counter, int& counterForEnd,bool& programEnd, MainMemory& ram,int id){
+void Control_Unit::Execute(REGISTER_BANK &registers,Instruction_Data &data, int &counter, int& counterForEnd,bool& programEnd, MainMemory& ram,Cache_Memory& Cache,int id){
     if(data.op == "ADD" ||  data.op == "SUB" || data.op == "MUL" || data.op == "DIV"){
-        Execute_Aritmetic_Operation(registers, data);
+        Execute_Aritmetic_Operation(registers, data, Cache);
     }else if(data.op == "BEQ" || data.op == "J" || data.op == "BNE" || data.op == "BGT" || data.op == "BGTI" || data.op == "BLT" || data.op == "BLTI"){
-        Execute_Loop_Operation(registers, data, counter,counterForEnd,programEnd,ram, id);
+        Execute_Loop_Operation(registers, data, counter,counterForEnd,programEnd,ram,Cache,id);
     }
     else if( data.op == "PRINT" ){
         if(PERMISSIONS2[1] == 1)
@@ -281,49 +282,81 @@ string Control_Unit::Get_source_Register(const uint32_t instruction){
     return code;
 }
 
-void Control_Unit::Execute_Aritmetic_Operation(REGISTER_BANK &registers,Instruction_Data &data){
+void Control_Unit::Execute_Aritmetic_Operation(REGISTER_BANK &registers,Instruction_Data &data, Cache_Memory& Cache){
 
         string nameregistersource = this->map.mp[data.source_register];
         string nametargetregister = this->map.mp[data.target_register];
         string nameregisterdestination = this->map.mp[data.destination_register]; 
         ALU alu;
-        if(data.op == "ADD"){
-            alu.A = registers.acessoLeituraRegistradores[nameregistersource]();
-            alu.B = registers.acessoLeituraRegistradores[nametargetregister]();
-            alu.op = ADD;
-            alu.calculate();
-            //cout << "valor de A:" << alu.A << endl;
-            //cout << "valor de B:" << alu.B << endl;
-            registers.acessoEscritaRegistradores[nameregisterdestination](alu.result);
-            //cout<< "resultado soma:" <<registers.acessoLeituraRegistradores[nameregisterdestination]() << endl;
-        }else if(data.op == "SUB"){
-            alu.A = registers.acessoLeituraRegistradores[nameregistersource]();
-            alu.B = registers.acessoLeituraRegistradores[nametargetregister]();
-            alu.op = SUB;
-            //cout << "valor de A:" << alu.A << endl;
-            //cout << "valor de B:" << alu.B << endl;
-            alu.calculate();
-            registers.acessoEscritaRegistradores[nameregisterdestination](alu.result);
-            //cout << "resultado subtração:" << registers.acessoLeituraRegistradores[nameregisterdestination]() << endl;
-        }else if(data.op == "MUL"){
-            alu.A = registers.acessoLeituraRegistradores[nameregistersource]();
-            alu.B = registers.acessoLeituraRegistradores[nametargetregister]();
-            alu.op = MUL;
-            alu.calculate();
-            registers.acessoEscritaRegistradores[nameregisterdestination](alu.result);
-            //cout << "resultado multiplicação:" << registers.acessoLeituraRegistradores[nameregisterdestination]() << endl;
-        }else if(data.op == "DIV"){
-            alu.A = registers.acessoLeituraRegistradores[nameregistersource]();
-            alu.B = registers.acessoLeituraRegistradores[nametargetregister]();
-            alu.op = DIV;
-            alu.calculate();
-            registers.acessoEscritaRegistradores[nameregisterdestination](alu.result);
+
+        alu.A = registers.acessoLeituraRegistradores[nameregistersource]();
+        alu.B = registers.acessoLeituraRegistradores[nametargetregister]();
+
+        string A = to_string(alu.A);
+        string B = to_string(alu.B);
+        string operation ="";
+
+        operation+=A;
+        operation+=Operators[data.op]; 
+        operation+=B;
+
+        auto resultado = Cache.buscarResultado(data.op,operation);
+
+        if(Cache.buscarNaCache(data.op,operation)){
+            printf(BRIGHT_CYAN "CACHE HIT - OPERAÇÃO: %s - VALORES: %s \n" NO_COLOR, data.op.c_str(), operation.c_str());
+            registers.acessoEscritaRegistradores[nameregisterdestination](resultado);
+        }
+        else{
+            operation="";
+            if(data.op == "ADD"){
+                alu.op = ADD;
+                alu.calculate();
+
+                operation+=A;
+                operation+='+'; 
+                operation+=B;
+
+                Cache.adicionarCache(data.op,operation,alu.result);
+                registers.acessoEscritaRegistradores[nameregisterdestination](alu.result);
+            }else if(data.op == "SUB"){
+                alu.op = SUB;
+                alu.calculate();
+
+                operation+=A;
+                operation+='-'; 
+                operation+=B;
+
+                Cache.adicionarCache(data.op,operation,alu.result);
+                registers.acessoEscritaRegistradores[nameregisterdestination](alu.result);
+                
+            }else if(data.op == "MUL"){
+                alu.op = MUL;
+                alu.calculate();
+
+                operation+=A;
+                operation+='*'; 
+                operation+=B;
+
+                Cache.adicionarCache(data.op,operation,alu.result);
+                registers.acessoEscritaRegistradores[nameregisterdestination](alu.result);
+                
+            }else if(data.op == "DIV"){
+                alu.op = DIV;
+                alu.calculate();
+
+                operation+=A;
+                operation+='/'; 
+                operation+=B;
+
+                Cache.adicionarCache(data.op,operation,alu.result);
+                registers.acessoEscritaRegistradores[nameregisterdestination](alu.result);
+            }
         }
 
         return;
 }
 
-void Control_Unit::Execute_Loop_Operation(REGISTER_BANK &registers,Instruction_Data &data, int &counter, int& counterForEnd, bool& programEnd, MainMemory& ram, int id){
+void Control_Unit::Execute_Loop_Operation(REGISTER_BANK &registers,Instruction_Data &data, int &counter, int& counterForEnd, bool& programEnd, MainMemory& ram,Cache_Memory& Cache,int id){
     
     string nameregistersource = this->map.mp[data.source_register];
     string nametargetregister = this->map.mp[data.target_register];

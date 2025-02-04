@@ -13,7 +13,7 @@ struct MainMemory{
 	int NumOfi;
 	MemoryCell **words;
 
-	MainMemory() : NumOfj(2048), NumOfi(2048), words(NULL) {}
+	MainMemory() : NumOfj(5), NumOfi(5), words(NULL) {}
 
 	MainMemory(int NumOfj, int NumOfi) {
 
@@ -23,9 +23,7 @@ struct MainMemory{
 
 		for(uint32_t k = 0; k<static_cast<uint32_t>(NumOfi) ; k++)
 		{
-			words[k] = (MemoryCell*)malloc(sizeof(MemoryCell) * this->NumOfj);
-		
-			
+			words[k] = (MemoryCell*)malloc(sizeof(MemoryCell) * this->NumOfj);			
 		}
 
 		for(uint32_t i = 0 ; i < static_cast<uint32_t>(NumOfi) ; i++ )

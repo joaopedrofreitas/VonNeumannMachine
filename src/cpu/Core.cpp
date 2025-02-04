@@ -1,14 +1,17 @@
 #include "REGISTER_BANK.h"
 #include "CONTROL_UNIT.h"
 #include "../memory/MAINMEMORY.h"
+#include "../memory/CACHE.h"
 #include "../loader.h"
 #include <cstdint>
 #include <queue>
 #include <atomic>
 #include <chrono>
 #include <random>
+#include <iomanip>  
+#include <algorithm>
 
-#define N_PROCESS 2 
+#define N_PROCESS 2                 // Numero max de pra cada Core.
 using namespace std;
 
 
@@ -39,6 +42,7 @@ int random_number(int min, int max) {
 struct ThreadArgs {
     int core_id;
     MainMemory* ram;
+    Cache_Memory* Cache;
     PCB* Processo;
     int max;
 };
@@ -48,6 +52,7 @@ void* CoreFunction(void* args){      //FCFS
 
     int core_id = coreArgs->core_id;
     MainMemory& ram = *(coreArgs->ram);
+    Cache_Memory& Cache = *(coreArgs-> Cache);
     PCB& Processo = *(coreArgs->Processo);
 
     Control_Unit UC;
@@ -80,7 +85,7 @@ void* CoreFunction(void* args){      //FCFS
             UC.Memory_Acess(registers, UC.data[counter - 3], ram, core_id);
         }
         if (counter >= 2 && counterForEnd >= 3) {
-            UC.Execute(registers, UC.data[counter - 2], counter, counterForEnd, endProgram, ram, core_id);
+            UC.Execute(registers, UC.data[counter - 2], counter, counterForEnd, endProgram, ram, Cache,core_id);
         }
         if (counter >= 1 && counterForEnd >= 4) {
             UC.Decode(registers, UC.data[counter - 1]);
@@ -126,6 +131,7 @@ void* CoreFunction_Lottery(void* args){      //Loteria
 
     int core_id = coreArgs->core_id;
     MainMemory& ram = *(coreArgs->ram);
+    Cache_Memory& Cache = *(coreArgs-> Cache);
     PCB& Processo = *(coreArgs->Processo);
     int max = coreArgs->max;
 
@@ -160,7 +166,7 @@ void* CoreFunction_Lottery(void* args){      //Loteria
             UC.Memory_Acess(registers, UC.data[counter - 3], ram, core_id);
         }
         if (counter >= 2 && counterForEnd >= 3) {
-            UC.Execute(registers, UC.data[counter - 2], counter, counterForEnd, endProgram, ram, core_id);
+           UC.Execute(registers, UC.data[counter - 2], counter, counterForEnd, endProgram, ram, Cache,core_id);
         }
         if (counter >= 1 && counterForEnd >= 4) {
             UC.Decode(registers, UC.data[counter - 1]);
@@ -210,6 +216,7 @@ void* CoreFunction_SJF(void* args){      //SJF
 
     int core_id = coreArgs->core_id;
     MainMemory& ram = *(coreArgs->ram);
+    Cache_Memory& Cache = *(coreArgs-> Cache);
     PCB& Processo = *(coreArgs->Processo);
 
     Control_Unit UC;
@@ -242,7 +249,7 @@ void* CoreFunction_SJF(void* args){      //SJF
             UC.Memory_Acess(registers, UC.data[counter - 3], ram, core_id);
         }
         if (counter >= 2 && counterForEnd >= 3) {
-            UC.Execute(registers, UC.data[counter - 2], counter, counterForEnd, endProgram, ram, core_id);
+            UC.Execute(registers, UC.data[counter - 2], counter, counterForEnd, endProgram, ram, Cache,core_id);
             Processo.COST-=1;
         }
         if (counter >= 1 && counterForEnd >= 4) {
