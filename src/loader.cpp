@@ -144,7 +144,7 @@ PCB loadProgram(const std::string& inputFile, MainMemory & ram, int id, int &LAS
     int STATE = 0;
     int COST = instructions.size();
 
-    PCB processo = PCB(id,QUANTUM,InitialAdress,COST);
+    PCB processo = PCB(id,QUANTUM,InitialAdress,LAST_ADDRESS,COST);
     Instruction_set = instructions;
 
     

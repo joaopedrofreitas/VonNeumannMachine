@@ -6,6 +6,7 @@
    <tr> <td> <u> 0 </u> </td> <td> Escalonador First come, First Service (FCFS)      </td> </tr>
    <tr> <td> <u> 1 </u> </td> <td> Escalonador Lottery Scheduling        (Bilheteria)</td> </tr>
    <tr> <td> <u> 2 </u> </td> <td> Escalonador Shortest Job First        (SJF)       </td> </tr>
+   <tr> <td> <u> 3 </u> </td> <td> Escalonador Shortest Job First        (SJF) Com ordenação de Identificadores Binários de Threads       </td> </tr>
    </table>
     <i>Este código possui um arquivo CmakeLists.txt</br>As diretrizes de execução e compilação deste Cmake são:<i>
     <table border="1">

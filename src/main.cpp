@@ -35,7 +35,6 @@ int main(int argc, char* argv[]) {
         READY_QUEUE.push(processo);
         PRIORITY_READY_QUEUE.push(processo); // SJF
     }
-
     while (!READY_QUEUE.empty()) {
         processes.push_back(std::move(READY_QUEUE.front()));
         READY_QUEUE.pop();
@@ -50,7 +49,7 @@ int main(int argc, char* argv[]) {
 
     printReadyQueueWithAvg(READY_QUEUE, similarityMatrix);
 
-    if(argv[argc-1][0] == '0'){
+    if(argv[argc-1][0] == '0'){     //FIFO
         for (int i = 0; i < (argc-2); i++) {
             threadArgs[i] = {i, &ram, &Cache,&READY_QUEUE.front()};
             if (pthread_create(&threads[i], nullptr, CoreFunction, (void*)&threadArgs[i]) != 0) {
@@ -65,7 +64,7 @@ int main(int argc, char* argv[]) {
         }
 
     }
-    else if(argv[argc-1][0]== '1'){
+    else if(argv[argc-1][0]== '1'){     //LOTERIA
         CURRENT_TICKET = random_number(0, Bilhetes.size());
 
         for (int i = 0; i < (argc-2); i++) {
@@ -82,7 +81,7 @@ int main(int argc, char* argv[]) {
         }
 
     }
-    else if(argv[argc-1][0]== '2'){
+    else if(argv[argc-1][0]== '2'){     //SJF
 
          for (int i = 0; i < (argc-2); i++) {
             threadArgs[i] = {i, &ram,&Cache,&READY_QUEUE.front()};
@@ -94,6 +93,21 @@ int main(int argc, char* argv[]) {
             if(!PRIORITY_READY_QUEUE.empty()){PRIORITY_READY_QUEUE.pop();}
         }
 
+        for (int i = 0; i < (argc-2); i++){
+            pthread_join(threads[i], nullptr);
+        }
+    }
+    else if(argv[argc-1][0] == '3') {  //SJF Com Fila de binários
+        for (int i = 0; i < (argc-2); i++) {
+            threadArgs[i] = {i, &ram, &Cache, &READY_QUEUE.front()};
+            if (pthread_create(&threads[i], nullptr, CoreFunction_SJF_Binary, (void*)&threadArgs[i]) != 0) {
+                std::cerr << "Erro ao criar thread " << i << std::endl;
+                return 1;
+            }
+            if(!READY_QUEUE.empty()){READY_QUEUE.pop();}
+            if(!BINARY_READY_QUEUE.empty()){ BINARY_READY_QUEUE.pop(); }
+        }
+        
         for (int i = 0; i < (argc-2); i++){
             pthread_join(threads[i], nullptr);
         }

@@ -20,12 +20,18 @@ struct ComparePCB {
         return a.COST > b.COST;     // PCB com menor COST tem maior prioridade
     }
 };
+struct ComparePCB_Binary {
+    bool operator()(const PCB& a, const PCB& b) {
+        return stoi(a.binaryID, nullptr, 2) > stoi(b.binaryID, nullptr, 2);
+    }
+};
 
+priority_queue<PCB, vector<PCB>, ComparePCB_Binary> BINARY_READY_QUEUE;
 queue<PCB> READY_QUEUE;
 priority_queue<PCB, vector<PCB>, ComparePCB> PRIORITY_READY_QUEUE;
 int CONTADOR_RUNNING = 0;
 vector<queue<int>> WAITING_QUEUE(3); //LOAD | PRINT | STORE -> I/O REQUESTS
-//vector<map<string,int>> Instruction_set;
+
 int LAST_ADDRESS = 0;
 int CURRENT_TICKET = 0;
 int RUNNING_PROCESS_ID = 0;
@@ -38,6 +44,10 @@ int random_number(int min, int max) {
     std::uniform_int_distribution<> distr(min, max); 
 
     return distr(gen);
+}
+
+void c_time(auto &start_time){
+    start_time -= std::chrono::nanoseconds(100);
 }
 
 struct ThreadArgs {
@@ -289,4 +299,81 @@ void* CoreFunction_SJF(void* args){      //SJF
     CONTADOR_RUNNING--;
     pthread_exit(nullptr);
     
+}
+
+
+void* CoreFunction_SJF_Binary(void* args) {
+    ThreadArgs* coreArgs = (ThreadArgs*)args;
+
+    int core_id = coreArgs->core_id;
+    MainMemory& ram = *(coreArgs->ram);
+    Cache_Memory& Cache = *(coreArgs->Cache);
+    PCB& Processo = *(coreArgs->Processo);
+
+    Control_Unit UC;
+    REGISTER_BANK registers;
+    Instruction_Data data;
+    bool endProgram = false;
+
+    int counterForEnd = 5;
+    int counter = 0;
+    int clock = 0;
+    int aux = 0;
+
+    auto start_time = chrono::high_resolution_clock::now();
+
+    if (CONTADOR_RUNNING < N_PROCESS) {
+        Processo.state = RUNNING;
+        CONTADOR_RUNNING++;
+        if(!BINARY_READY_QUEUE.empty()){ BINARY_READY_QUEUE.pop(); }
+    } else {
+        while(CONTADOR_RUNNING >= N_PROCESS && BINARY_READY_QUEUE.top().process_id != core_id) {BINARY_READY_QUEUE.push(Processo);}
+        CONTADOR_RUNNING++;
+        if(!BINARY_READY_QUEUE.empty()){ BINARY_READY_QUEUE.pop(); }
+    }
+
+    while (counterForEnd > 0) {
+        
+        if (counter >= 4 && counterForEnd >= 1) {
+            UC.Write_Back(UC.data[counter - 4], ram, registers, core_id, LAST_ADDRESS);
+        }
+        if (counter >= 3 && counterForEnd >= 2) {
+            UC.Memory_Acess(registers, UC.data[counter - 3], ram, core_id);
+        }
+        if (counter >= 2 && counterForEnd >= 3) {
+            UC.Execute(registers, UC.data[counter - 2], counter, counterForEnd, endProgram, ram, Cache,core_id);
+            Processo.COST-=1;
+        }
+        if (counter >= 1 && counterForEnd >= 4) {
+            UC.Decode(registers, UC.data[counter - 1]);
+        }
+        if (counter >= 0 && counterForEnd == 5) {
+            UC.data.push_back(data);
+            UC.Fetch(registers, endProgram, ram, Processo, core_id);
+        }
+
+        counter += 1;
+        clock += 1;
+        aux += 1;
+
+            if (endProgram) {
+                counterForEnd = -1;
+            }else{ 
+                if((Processo.QUANTUM - aux) == 0 && counterForEnd != 0) {
+                    CONTADOR_RUNNING--;            
+                    BINARY_READY_QUEUE.push(Processo);
+                    while(CONTADOR_RUNNING >= N_PROCESS && BINARY_READY_QUEUE.top().process_id != core_id) {BINARY_READY_QUEUE.push(Processo);}
+                    CONTADOR_RUNNING++;
+                    if(!BINARY_READY_QUEUE.empty()){ BINARY_READY_QUEUE.pop(); }
+            }
+        }
+    }
+    c_time(start_time);
+    auto end_time = chrono::high_resolution_clock::now();
+    chrono::duration<double> timestamp = end_time - start_time;
+    
+    printf("Core %d (SJF com ordenção de IDs de threads) finalizado. Tempo: %.7f seg.\n", core_id, timestamp.count());
+
+    CONTADOR_RUNNING--;
+    pthread_exit(nullptr);
 }
